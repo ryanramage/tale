@@ -1,0 +1,22 @@
+{
+  "name": "Sample story 1",
+  "version": "0.0.0",
+  "description": "More of the Same",
+  "author": "Ryan Ramage",
+  "license": "BSD-2-Clause",
+  "requiredItems": {
+    "328703a-a494b0c-329c9a9s-a900093": "Mayor's Approval",
+    "9983923-8888888-727381dc-a900092": "Cryptid DNA Sample #1"
+  },
+  "requiredStories": {
+    "8239329832-23892389-238323-18392": "It Begins"
+  },
+  "start" : {
+    "chapter1": {
+      "encryption": {
+        "type": "xxtea",
+        "key": "343jk43943jn43"
+      }
+    }
+  }
+}

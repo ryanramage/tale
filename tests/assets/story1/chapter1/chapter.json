@@ -1,0 +1,12 @@
+{
+  "type": "markdown",
+  "next": {
+    "chapter2": {
+      "clue": "Go to the burger bar on 102 and enter the 10 digits on the sign on the front",
+      "encryption": {
+        "type": "xxtea",
+        "key": "343jk43943jn43"
+      }
+    }
+  }
+}
