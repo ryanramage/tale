@@ -1,0 +1,12 @@
+{
+  "type": "audio",
+  "next": {
+    "chapter5": {
+      "clue": "Almost done. What is the phone number of Pizza Planet?",
+      "encryption": {
+        "type": "xxtea",
+        "key": "221-2121-1212"
+      }
+    }
+  }
+}

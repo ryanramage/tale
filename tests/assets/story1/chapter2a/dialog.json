@@ -1,0 +1,8 @@
+{
+  "dialog": [
+    {"bob": "So you think this is for the best?"},
+    {"frank": "Yeah of course. We got them out of the way"},
+    {"bob": "But what about city hall?"},
+    {"frank": "That was 1952. No one knows about that..."}
+  ]
+}

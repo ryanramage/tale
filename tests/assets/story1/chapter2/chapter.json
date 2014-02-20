@@ -1,0 +1,15 @@
+{
+  "type": "markdown",
+  "items": {
+    "28219218912-121289128912": "One blue loafer"
+  },
+  "next": {
+    "chapter3": {
+      "clue": "What is the code on the box outside the front porch",
+      "encryption": {
+        "type": "xxtea",
+        "key": "abba-acca"
+      }
+    }
+  }
+}
