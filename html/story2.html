@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<title>Story2</title>
+<meta charset="utf-8">
+<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+<style>
+  body {
+    background-color: black; 
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+
+  <p class="clue"></p>
+  <input id="answer"></input>
+  <button>Verify</button>
+
+</div>
+
+<script>
+
+  var clue,
+      key;
+
+  $.getJSON('../tests/assets/story2/chapter1/chapter.json').done(function(data) {
+    clue = data.next.chapter2.clue; 
+    key = data.next.chapter2.encryption.key; 
+    $('#container .clue').append(clue); 
+  }).fail(function() {
+    console.log('fail'); 
+    $('#container').html('AJAX failed. Run on a server.'); 
+  }); 
+
+  $('button').on('click', function() {
+    if ( $('#answer').val() == key) {
+      alert('you found a Cryptid!');
+      $('#container').html('no more cryptids here, u took them all'); 
+    } else {
+      alert('nope'); 
+    }
+  })
+</script>
+
+
+</body>
+</html>

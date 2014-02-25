@@ -1,0 +1,12 @@
+{
+  "type": "markdown",
+  "next": {
+    "chapter2": {
+      "clue": "Goto Credo on 104st and buy a latte.  Enter Credo's 10 digit GST # (shown on the receipt).",
+      "encryption": {
+        "type": "xxtea",
+        "key": "3336669990"
+      }
+    }
+  }
+}

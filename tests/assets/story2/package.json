@@ -1,0 +1,15 @@
+{
+  "name": "Experimental story (story 2)",
+  "version": "0.0.0",
+  "description": "More of the Same",
+  "author": "D",
+  "license": "BSD-2-Clause",
+  "start" : {
+    "chapter1": {
+      "encryption": {
+        "type": "xxtea",
+        "key": "3336669990"
+      }
+    }
+  }
+}
