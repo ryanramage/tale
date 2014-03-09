@@ -9,10 +9,7 @@
   "next": {
     "chapter3": {
       "clue": "Go to the downtown library. Find the map of City Hall, circa 1952. What is the id of it?",
-      "encryption": {
-        "type": "xxtea",
-        "key": "edm-1952-43484394389"
-      }
+      "key": "edm-1952-43484394389"
     }
   }
 }

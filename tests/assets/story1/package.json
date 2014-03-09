@@ -13,10 +13,7 @@
   },
   "start" : {
     "chapter1": {
-      "encryption": {
-        "type": "xxtea",
         "key": "343jk43943jn43"
-      }
     }
   }
 }

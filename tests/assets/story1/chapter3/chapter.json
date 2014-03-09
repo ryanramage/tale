@@ -4,10 +4,7 @@
   "next": {
     "chapter4": {
       "clue": "Go to the corner of 109St and 102Ave. There is a mailbox. What is the box number?",
-      "encryption": {
-        "type": "xxtea",
-        "key": "post-29329023-3923"
-      }
+      "key": "post-29329023-3923"
     }
   }
 }

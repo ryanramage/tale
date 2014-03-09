@@ -6,10 +6,7 @@
   "next": {
     "chapter3": {
       "clue": "What is the code on the box outside the front porch",
-      "encryption": {
-        "type": "xxtea",
-        "key": "abba-acca"
-      }
+      "key": "abba-acca"
     }
   }
 }
