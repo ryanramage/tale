@@ -1,5 +1,5 @@
 var packager = require('../lib/packager'),
-    Serve = require('../lib/serve'),
+    Appcache = require('../lib/appcache'),
     async = require('async'),
     levelup = require('levelup'),
     concat = require('concat-stream'),
@@ -17,8 +17,8 @@ test('app cache', function(t){
 
   packager.store(dir, pkg, graph, main_db, function(err, story_db){
 
-    var server = new Serve(main_db);
-    server.appcache(graph.id, concat(function(contents){
+    var appcache = new Appcache(main_db);
+    appcache.manifest(graph.id, concat(function(contents){
       console.log(contents.toString());
       t.end();
     }))
@@ -35,13 +35,13 @@ test('file serving', function(t){
 
   packager.store(dir, pkg, graph, main_db, function(err, story_db){
 
-    var server = new Serve(main_db);
+    var appcache = new Appcache(main_db);
 
     async.parallel([
       function(cb){
         // test the node
         var node = 'node/' + graph.nodes[Object.keys(graph.nodes)[0]].id;
-        server.file(graph.id, node).pipe(concat(function(contents){
+        appcache.file(graph.id, node).pipe(concat(function(contents){
           //console.log(contents.toString());
           cb();
         }));
@@ -50,7 +50,7 @@ test('file serving', function(t){
       function(cb){
         // test the key
         var key = 'key/' + graph.keys[Object.keys(graph.keys)[0]].id;
-        server.file(graph.id, key).pipe(concat(function(contents){
+        appcache.file(graph.id, key).pipe(concat(function(contents){
           //console.log(contents.toString());
           cb()
         }));
@@ -63,7 +63,7 @@ test('file serving', function(t){
 
 
 
-        server.file(graph.id, file)
+        appcache.file(graph.id, file)
           .pipe(new xxtea.Decrypt( bops.from(decryption_key, 'base64') ))
           .pipe(concat(function(contents){
             console.log(contents.toString('utf-8'));
