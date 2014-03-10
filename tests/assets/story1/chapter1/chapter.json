@@ -3,11 +3,11 @@
   "next": {
     "chapter2": {
       "clue": "Go to the burger bar on 102 and enter the 10 digits on the sign on the front",
-      "key": "343jk43943jn43"
+      "pass": "343jk43943jn43"
     },
     "chapter2a": {
       "clue": "You may skip things and go south to the 7-11. What is the attendants name?",
-      "key": "doug"
+      "pass": "doug"
     }
   }
 }

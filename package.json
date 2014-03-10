@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "memdown": "^0.7.0",
-    "levelup": "^0.18.2"
+    "levelup": "^0.18.2",
+    "concat-stream": "^1.4.3"
   }
 }
