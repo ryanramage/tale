@@ -4,7 +4,8 @@
   "description": "A location story telling platform",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/tape tests/*.js"
+    "test": "./node_modules/.bin/tape tests/*.js",
+    "start": "node lib/web.js"
   },
   "author": "Ryan Ramage",
   "license": "BSD-2-Clause",
@@ -17,7 +18,8 @@
     "ls-stream": "^1.0.0",
     "sublevel": "^2.4.0",
     "bops": "^0.1.1",
-    "sjcl": "^1.0.0"
+    "sjcl": "^1.0.0",
+    "express": "^3.5.0"
   },
   "devDependencies": {
     "memdown": "^0.7.0",
