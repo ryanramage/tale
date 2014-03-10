@@ -1,5 +1,6 @@
 var packager = require('../lib/packager'),
     levelup = require('levelup'),
+    sjcl = require('sjcl'),
     test = require('tape');
 
 
@@ -58,13 +59,28 @@ test('store assets', function(t){
 
   var pkg = packager.load_package_json(dir);
   var graph = packager.generate_graph(dir, pkg);
-  //console.log(graph);
+
 
 
   var db = levelup('/does/not/matter', { db: require('memdown') })
 
-  packager.store(dir, pkg, graph, db, function(err, result){
-    t.done();
+  packager.store(dir, pkg, graph, db, function(err, story_db){
+    var keys_db = story_db.sublevel('keys'),
+        chapters_db = story_db.sublevel('chapters'),
+        first = graph.keys['_|chapter1'];
+
+    keys_db.get(first.id, function(err, value){
+      var chapter_key = JSON.parse( sjcl.decrypt(first.pass, value ) );
+
+      chapters_db.get(chapter_key.to, function(err, value){
+        var chapter = JSON.parse( sjcl.decrypt(chapter_key.key, value ) );
+
+        t.equal(chapter.type, 'markdown');
+
+        t.end();
+
+      })
+    })
   })
 
 })
