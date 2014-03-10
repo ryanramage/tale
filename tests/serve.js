@@ -61,7 +61,7 @@ test('file serving', function(t){
 
         var file = 'file/' + Object.keys(graph.files)[0];
 
-        console.log('decrypting url', file, 'key', decryption_key)
+
 
         server.file(graph.id, file)
           .pipe(new xxtea.Decrypt( bops.from(decryption_key, 'base64') ))
