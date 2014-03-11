@@ -24,14 +24,14 @@ test('read start chapter', function(t){
 
 test('create graph', function(t){
   var dir = 'tests/assets/story1';
-  t.plan(19);
+  t.plan(17);
 
   var pkg = packager.load_package_json(dir);
   var graph = packager.generate_graph(dir, pkg);
 
 
   t.ok(graph.nodes.chapter1.id);
-  t.ok(graph.nodes.chapter1.key);
+  //t.ok(graph.nodes.chapter1);
   t.ok(graph.nodes.chapter2.id);
   t.ok(graph.nodes.chapter2.key);
   t.ok(graph.nodes.chapter2a.id);
@@ -43,7 +43,7 @@ test('create graph', function(t){
   t.ok(graph.nodes.chapter5.id);
   t.ok(graph.nodes.chapter5.key);
 
-  t.equal(graph.keys['_|chapter1'].pass, '343jk43943jn43');
+  //t.equal(graph.keys['_|chapter1'].pass, '343jk43943jn43');
   t.equal(graph.keys['chapter1|chapter2'].pass, '343jk43943jn43');
   t.equal(graph.keys['chapter1|chapter2a'].pass, 'doug');
   t.equal(graph.keys['chapter2|chapter3'].pass, 'abba-acca');
@@ -67,7 +67,8 @@ test('store assets', function(t){
   packager.store(dir, pkg, graph, db, function(err, story_db){
     var keys_db = story_db.sublevel('keys'),
         chapters_db = story_db.sublevel('chapters'),
-        first = graph.keys['_|chapter1'];
+        first = graph.keys['chapter1|chapter2'];
+
 
     keys_db.get(first.id, function(err, value){
       var chapter_key = JSON.parse( sjcl.decrypt(first.pass, value ) );

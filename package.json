@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/tape tests/*.js",
-    "start":  "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node lib/web.js",
+    "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node lib/web.js",
     "devel": "npm run-script unminify; npm run-script web;",
     "web": "node lib/web",
     "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o jam/require.prod.js",
@@ -23,7 +23,8 @@
     "sublevel": "^2.4.0",
     "bops": "^0.1.1",
     "sjcl": "^1.0.0",
-    "express": "git://github.com/blakeembrey/express.git#modular-routing"
+    "express": "git://github.com/blakeembrey/express.git#modular-routing",
+    "mime": "^1.2.11"
   },
   "devDependencies": {
     "memdown": "^0.7.0",

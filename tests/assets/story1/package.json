@@ -11,9 +11,5 @@
   "requiredStories": {
     "8239329832-23892389-238323-18392": "It Begins"
   },
-  "start" : {
-    "chapter1": {
-        "pass": "343jk43943jn43"
-    }
-  }
+  "start" : "chapter1"
 }
