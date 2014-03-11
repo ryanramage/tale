@@ -2005,10 +2005,19 @@ var jam = {
             "name": "oboe",
             "location": "jam/oboe",
             "main": "dist/oboe-browser.js"
+        },
+        {
+            "name": "sjcl",
+            "location": "jam/sjcl",
+            "main": "sjcl.js"
         }
     ],
     "version": "0.2.17",
-    "shim": {}
+    "shim": {
+        "sjcl": {
+            "exports": "sjcl"
+        }
+    }
 };
 
 if (typeof require !== "undefined" && require.config) {
@@ -2018,9 +2027,18 @@ if (typeof require !== "undefined" && require.config) {
             "name": "oboe",
             "location": "jam/oboe",
             "main": "dist/oboe-browser.js"
+        },
+        {
+            "name": "sjcl",
+            "location": "jam/sjcl",
+            "main": "sjcl.js"
         }
     ],
-    "shim": {}
+    "shim": {
+        "sjcl": {
+            "exports": "sjcl"
+        }
+    }
 });
 }
 else {
@@ -2030,9 +2048,18 @@ else {
             "name": "oboe",
             "location": "jam/oboe",
             "main": "dist/oboe-browser.js"
+        },
+        {
+            "name": "sjcl",
+            "location": "jam/sjcl",
+            "main": "sjcl.js"
         }
     ],
-    "shim": {}
+    "shim": {
+        "sjcl": {
+            "exports": "sjcl"
+        }
+    }
 };
 }
 

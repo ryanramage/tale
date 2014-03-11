@@ -1,6 +1,7 @@
-define(['oboe'], function(oboe){
+define(['oboe', 'sjcl'], function(oboe, sjcl){
 
-  console.log('ok, here we go');
+
+  console.log('ok, here we go', window.sjcl);
 
 
   window.applicationCache.addEventListener('cached', function(){
@@ -29,6 +30,24 @@ define(['oboe'], function(oboe){
     oboe('meta/package.json').done(function(pkg){
       oboe('node/' + pkg.start_id).done(function(start_chapter){
         console.log(start_chapter);
+        var chapter2_id = start_chapter.next.chapter2.id;
+
+        oboe('key/' + chapter2_id).done(function(chapter2_key){
+          console.log('ok', chapter2_key);
+
+          console.log('before');
+
+          try {
+            var c2 = JSON.parse( window.sjcl.decrypt('343jk43943jn43', JSON.stringify(chapter2_key)));
+            console.log('c2', c2.to, c2.key);
+
+            console.log('after');
+          } catch(e) {
+            console.log('e', e);
+          }
+        })
+
+
       })
     })
   }
