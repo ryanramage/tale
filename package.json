@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/tape tests/*.js",
-    "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node lib/web.js"
+    "start":  "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node lib/web.js",
+    "devel": "npm run-script unminify; npm run-script web;",
+    "web": "node lib/web",
+    "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o jam/require.prod.js",
+    "unminify": "rm html/jam/require.prod.js"
   },
   "author": "Ryan Ramage",
   "license": "BSD-2-Clause",
