@@ -57,10 +57,9 @@ test('file serving', function(t){
       },
       function(cb){
         // test a file
-        var decryption_key = graph.nodes['chapter1'].key;
+        var decryption_key = graph.nodes['chapter2'].key;
 
-        var file = 'file/' + Object.keys(graph.files)[0];
-
+        var file = 'file/' + Object.keys(graph.files)[1];
 
 
         appcache.file(graph.id, file)
@@ -68,6 +67,13 @@ test('file serving', function(t){
           .pipe(concat(function(contents){
             console.log(contents.toString('utf-8'));
             cb()
+        }));
+      },
+      function(cb) {
+        // test the meta
+        appcache.file(graph.id, 'meta/package.json').pipe(concat(function(contents){
+          console.log(contents.toString());
+          cb()
         }));
       }
     ], function(){
