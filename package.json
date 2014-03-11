@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/tape tests/*.js",
-    "start": "node lib/web.js"
+    "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node lib/web.js"
   },
   "author": "Ryan Ramage",
   "license": "BSD-2-Clause",
@@ -19,11 +19,15 @@
     "sublevel": "^2.4.0",
     "bops": "^0.1.1",
     "sjcl": "^1.0.0",
-    "express": "^3.5.0"
+    "express": "git://github.com/blakeembrey/express.git#modular-routing"
   },
   "devDependencies": {
     "memdown": "^0.7.0",
     "levelup": "^0.18.2",
     "concat-stream": "^1.4.3"
+  },
+  "jam": {
+    "baseUrl": "html",
+    "packageDir": "html/jam"
   }
 }

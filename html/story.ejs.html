@@ -25,5 +25,24 @@
 
 </script>
 
+<script type="text/javascript">
+  function load(){
+    require(['js/app.js'], function (app) {
+    });
+  }
+  function loadDev(){
+      console.log('DEVELOPMENT MODE');
+      var script = document.createElement("script");
+      script.src = 'jam/require.js';
+      script.onload = load;
+      document.head.appendChild( script );
+  }
+  function close_feedback() {
+    $('footer .feedback').hide();
+  }
+</script>
+<script src="jam/require.prod.js" onerror="loadDev()" onload="load()"></script>
+
+
 </body>
 </html>
