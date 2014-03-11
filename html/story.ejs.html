@@ -6,28 +6,10 @@
 <h2><%=story_id%></h2>
 
 
-<script type="text/javascript">
-  window.applicationCache.addEventListener('cached', function(){
-    console.log('all done');
-  }, false);
-  window.applicationCache.addEventListener('noupdate', function(){
-    console.log('loaded prev');
-  }, false)
-
-  window.applicationCache.addEventListener('downloading', function(){
-    console.log('starting to download');
-  }, false);
-
-  window.applicationCache.addEventListener('progress', function(e){
-    console.log('downloading', (e.loaded / e.total) * 100, '%' ) ;
-  }, false);
-
-
-</script>
 
 <script type="text/javascript">
   function load(){
-    require(['js/app.js'], function (app) {
+    require(['js/app'], function (app) {
     });
   }
   function loadDev(){
