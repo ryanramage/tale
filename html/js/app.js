@@ -75,7 +75,6 @@ define([
       })
     } else {
       xxtea('file/' + file.id, key, function(err, md){
-        console.log(err, md);
         ractive.set('content', marked(md));
       })
     }
