@@ -18,7 +18,6 @@ define([
   }
   router = director.Router(routes);
   router.init('/');
-  console.log(chapter_t);
   var ractive = new Ractive({
     el: '#main',
     template: chapter_t,
@@ -29,18 +28,31 @@ define([
 
   ractive.on('crack', function(e){
     var id = e.context.id,
-        pass = e.context.pass;
-    oboe('key/' + id).done(function(key_ct){
+        pass = e.context.pass,
+        keypath = e.keypath;
+
+        crack = crack_chapter.bind(null, id, pass, function(err, next_chapter){
+          if (err) return ractive.set(keypath + '.error',"Invalid Password");
+          render_chapter(next_chapter);
+        });
+        ;
+    setTimeout(crack, 0);
+  })
+
+  function crack_chapter(key_id, pass, callback) {
+    oboe('key/' + key_id).done(function(key_ct){
       try {
         var c2 = JSON.parse( window.sjcl.decrypt(pass, JSON.stringify(key_ct)));
         oboe('node/' + c2.to).done(function(chapter_ct){
           var next_chapter = JSON.parse( window.sjcl.decrypt(c2.key, JSON.stringify(chapter_ct)));
+          return callback(null, next_chapter);
         })
       } catch(e) {
-        alert('invalid password');
+        return callback(e);
       }
     })
-  })
+  }
+
 
   function first_chapter() {
     oboe('meta/package.json').done(function(pkg){
@@ -64,39 +76,12 @@ define([
   }
 
   function render_clues(chapter) {
+    ractive.set('next', []);
     var names = _.keys(chapter.next);
     _.each(names, function(name, i){
-      console.log(name, i, chapter.next[name]);
       ractive.set('next[' + i + ']', chapter.next[name]);
     })
   }
 
-
-
-  function start() {
-    oboe('meta/package.json').done(function(pkg){
-      oboe('node/' + pkg.start_id).done(function(start_chapter){
-        console.log(start_chapter);
-        var chapter2_id = start_chapter.next.chapter2.id;
-
-        oboe('key/' + chapter2_id).done(function(chapter2_key){
-          console.log('ok', chapter2_key);
-
-          console.log('before');
-
-          try {
-            var c2 = JSON.parse( window.sjcl.decrypt('343jk43943jn43', JSON.stringify(chapter2_key)));
-            console.log('c2', c2.to, c2.key);
-
-            console.log('after');
-          } catch(e) {
-            console.log('e', e);
-          }
-        })
-
-
-      })
-    })
-  }
   return {};
 })
