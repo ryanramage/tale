@@ -10,7 +10,7 @@
     "web": "node lib/web",
     "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o jam/require.prod.js",
     "unminify": "rm html/jam/require.prod.js",
-    "browserify": "./node_modules/.bin/browserify lib/xxtea-decrypt.js  --standalone xxtea  > html/js/xxtea.js"
+    "browserify": "./node_modules/.bin/browserify lib/client/xxtea-decrypt.js  --standalone xxtea  > html/jam/xxtea.js"
   },
   "author": "Ryan Ramage",
   "license": "BSD-2-Clause",

@@ -7,7 +7,7 @@ define([
   'jscss',
   'marked',
   'Ractive',
-  './xxtea',
+  '../jam/xxtea',
   'text!../css/bootstrap.min.css',
   'text!../chapter.template.html',
   'ractive-events-tap'
