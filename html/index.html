@@ -1,29 +1,29 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html manifest="story.appcache">
 <head>
-<title>Tale</title>
-<meta charset="utf-8">
-<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
-<style>
-  body {
-    background-color: black;
-    color: white;
-  }
-</style>
 </head>
 <body>
 
-<div id="container">
+<div id="main" class="container"></div>
 
-  <p class="clue"></p>
-  <input id="answer"></input>
-  <button>Verify</button>
 
-</div>
-
-<script>
-
+<script type="text/javascript">
+  function load(){
+    require(['js/app'], function (app) {
+    });
+  }
+  function loadDev(){
+      console.log('DEVELOPMENT MODE');
+      var script = document.createElement("script");
+      script.src = 'jam/require.js';
+      script.onload = load;
+      document.head.appendChild( script );
+  }
+  function close_feedback() {
+    $('footer .feedback').hide();
+  }
 </script>
+<script src="jam/require.prod.js" onerror="loadDev()" onload="load()"></script>
 
 
 </body>
