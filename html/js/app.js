@@ -7,10 +7,11 @@ define([
   'jscss',
   'marked',
   'Ractive',
+  './xxtea',
   'text!../css/bootstrap.min.css',
   'text!../chapter.template.html',
   'ractive-events-tap'
-], function($, _, director, oboe, sjcl, jscss, marked, Ractive, bootstrap, chapter_t){
+], function($, _, director, oboe, sjcl, jscss, marked, Ractive, xxtea, bootstrap, chapter_t){
   jscss.embed(bootstrap);
 
   var routes = {
@@ -29,13 +30,11 @@ define([
   ractive.on('crack', function(e){
     var id = e.context.id,
         pass = e.context.pass,
-        keypath = e.keypath;
-
-        crack = crack_chapter.bind(null, id, pass, function(err, next_chapter){
+        keypath = e.keypath,
+        crack = crack_chapter.bind(null, id, pass, function(err, next){
           if (err) return ractive.set(keypath + '.error',"Invalid Password");
-          render_chapter(next_chapter);
+          render_chapter(next.chapter, next.key);
         });
-        ;
     setTimeout(crack, 0);
   })
 
@@ -44,8 +43,8 @@ define([
       try {
         var c2 = JSON.parse( window.sjcl.decrypt(pass, JSON.stringify(key_ct)));
         oboe('node/' + c2.to).done(function(chapter_ct){
-          var next_chapter = JSON.parse( window.sjcl.decrypt(c2.key, JSON.stringify(chapter_ct)));
-          return callback(null, next_chapter);
+          var chapter = JSON.parse( window.sjcl.decrypt(c2.key, JSON.stringify(chapter_ct)));
+          return callback(null, {key: c2.key, chapter: chapter});
         })
       } catch(e) {
         return callback(e);
@@ -62,17 +61,24 @@ define([
     });
   }
 
-  function render_chapter(chapter) {
-    if (chapter.type === 'markdown') render_markdown(chapter);
+  function render_chapter(chapter, key) {
+    if (chapter.type === 'markdown') render_markdown(chapter, key);
 
     render_clues(chapter)
   }
 
-  function render_markdown(chapter) {
+  function render_markdown(chapter, key) {
     var file = _.find(chapter.files, function(file){ return file.name === 'README.md' })
-    $.get('file/' + file.id, function(md){
-      ractive.set('content', marked(md));
-    })
+    if (!key) {
+      $.get('file/' + file.id, function(md){
+        ractive.set('content', marked(md));
+      })
+    } else {
+      xxtea('file/' + file.id, key, function(err, md){
+        console.log(err, md);
+        ractive.set('content', marked(md));
+      })
+    }
   }
 
   function render_clues(chapter) {

@@ -9,7 +9,8 @@
     "devel": "npm run-script unminify; npm run-script web;",
     "web": "node lib/web",
     "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o jam/require.prod.js",
-    "unminify": "rm html/jam/require.prod.js"
+    "unminify": "rm html/jam/require.prod.js",
+    "browserify": "./node_modules/.bin/browserify lib/xxtea-decrypt.js  --standalone xxtea  > html/js/xxtea.js"
   },
   "author": "Ryan Ramage",
   "license": "BSD-2-Clause",
@@ -24,12 +25,14 @@
     "bops": "^0.1.1",
     "sjcl": "^1.0.0",
     "express": "git://github.com/blakeembrey/express.git#modular-routing",
-    "mime": "^1.2.11"
+    "mime": "^1.2.11",
+    "filereader-stream": "^0.1.0"
   },
   "devDependencies": {
     "memdown": "^0.7.0",
     "levelup": "^0.18.2",
-    "concat-stream": "^1.4.3"
+    "concat-stream": "^1.4.3",
+    "browserify": "^3.32.1"
   },
   "jam": {
     "baseUrl": "html",
