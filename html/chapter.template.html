@@ -1,0 +1,15 @@
+<div>
+{{{content}}}
+</div>
+{{#next}}
+  <div>
+    <p class="clue">{{clue}}</p>
+    <div class="form-inline" role="form">
+      <div class="form-group">
+          <label class="sr-only" for="exampleInputPassword2">Password</label>
+          <input type="password" class="form-control" value='{{.pass}}' placeholder="Password">
+      </div>
+      <button type="button" class="btn btn-default" on-tap="crack">Next &raquo;</button>
+    </div>
+  </div>
+{{/next}}

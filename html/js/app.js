@@ -1,29 +1,76 @@
-define(['oboe', 'sjcl'], function(oboe, sjcl){
+define([
+  'jquery',
+  'lodash',
+  'director',
+  'oboe',
+  'sjcl',
+  'jscss',
+  'marked',
+  'Ractive',
+  'text!../css/bootstrap.min.css',
+  'text!../chapter.template.html',
+  'ractive-events-tap'
+], function($, _, director, oboe, sjcl, jscss, marked, Ractive, bootstrap, chapter_t){
+  jscss.embed(bootstrap);
 
+  var routes = {
+    '/': first_chapter,
+  }
+  router = director.Router(routes);
+  router.init('/');
+  console.log(chapter_t);
+  var ractive = new Ractive({
+    el: '#main',
+    template: chapter_t,
+    data: {
+      next: []
+    }
+  });
 
-  console.log('ok, here we go', window.sjcl);
+  ractive.on('crack', function(e){
+    var id = e.context.id,
+        pass = e.context.pass;
+    oboe('key/' + id).done(function(key_ct){
+      try {
+        var c2 = JSON.parse( window.sjcl.decrypt(pass, JSON.stringify(key_ct)));
+        oboe('node/' + c2.to).done(function(chapter_ct){
+          var next_chapter = JSON.parse( window.sjcl.decrypt(c2.key, JSON.stringify(chapter_ct)));
+        })
+      } catch(e) {
+        alert('invalid password');
+      }
+    })
+  })
 
+  function first_chapter() {
+    oboe('meta/package.json').done(function(pkg){
+      oboe('node/' + pkg.start_id).done(function(start_chapter){
+        render_chapter(start_chapter);
+      })
+    });
+  }
 
-  window.applicationCache.addEventListener('cached', function(){
-    console.log('all done');
-  }, false);
-  window.applicationCache.addEventListener('noupdate', function(){
-    console.log('loaded prev');
-    // start();
-  }, false)
+  function render_chapter(chapter) {
+    if (chapter.type === 'markdown') render_markdown(chapter);
 
-  window.applicationCache.addEventListener('downloading', function(){
-    console.log('starting to download');
-  }, false);
+    render_clues(chapter)
+  }
 
-  window.applicationCache.addEventListener('progress', function(e){
-    console.log('downloading', (e.loaded / e.total) * 100, '%' ) ;
-  }, false);
+  function render_markdown(chapter) {
+    var file = _.find(chapter.files, function(file){ return file.name === 'README.md' })
+    $.get('file/' + file.id, function(md){
+      ractive.set('content', marked(md));
+    })
+  }
 
-  window.applicationCache.addEventListener('error', function(e){
-    console.log('error', e) ;
-    // start();
-  }, false);
+  function render_clues(chapter) {
+    var names = _.keys(chapter.next);
+    _.each(names, function(name, i){
+      console.log(name, i, chapter.next[name]);
+      ractive.set('next[' + i + ']', chapter.next[name]);
+    })
+  }
+
 
 
   function start() {
@@ -51,7 +98,5 @@ define(['oboe', 'sjcl'], function(oboe, sjcl){
       })
     })
   }
-  start();
-
   return {};
 })
