@@ -4,18 +4,18 @@ var tea = _dereq_('xxtea-stream'),
     createReadStream = _dereq_('filereader-stream'),
     bops = _dereq_('bops');
 
-module.exports = function(url, pass, cb){
+module.exports = function(url, pass, as_string, cb){
 
   var oReq = new XMLHttpRequest();
   oReq.open("GET", url, true);
   oReq.responseType = "blob";
 
   oReq.onload = function (oEvent) {
-
     createReadStream(oReq.response)
       .pipe(new tea.Decrypt(bops.from(pass, 'base64')))
       .pipe(concat(function(contents) {
-        cb(null, bops.to(contents));
+        if (as_string) return cb(null, bops.to(contents));
+        else return cb(null, contents);
       }))
   };
   oReq.send(null);

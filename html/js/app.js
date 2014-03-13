@@ -73,6 +73,16 @@ define([
   }
 
   function render_audio(chapter, key) {
+    var filename = chapter.file;
+    var file = _.find(chapter.files, function(file){ return file.name === filename })
+    xxtea('file/' + file.id, key, false, function(err, audio){
+
+      var blob = new Blob(audio, {type: file.content_type});
+      var url = URL.createObjectURL(blob);
+      var audio = new Audio(url);
+      audio.play();
+      console.log('audio decoded. should play?');
+    })
     ractive.set('content', "coming soon");
   }
 
@@ -83,7 +93,8 @@ define([
         ractive.set('content', marked(md));
       })
     } else {
-      xxtea('file/' + file.id, key, function(err, md){
+      xxtea('file/' + file.id, key, true, function(err, md){
+        console.log(md);
         ractive.set('content', marked(md));
       })
     }
