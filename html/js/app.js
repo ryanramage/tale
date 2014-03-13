@@ -62,9 +62,18 @@ define([
   }
 
   function render_chapter(chapter, key) {
+    if (chapter.type === 'text') render_text(chapter, key);
     if (chapter.type === 'markdown') render_markdown(chapter, key);
+    if (chapter.type === 'audio') render_audio(chapter, key);
+    render_clues(chapter);
+  }
 
-    render_clues(chapter)
+  function render_text(chapter, key){
+     ractive.set('content', chapter.text);
+  }
+
+  function render_audio(chapter, key) {
+    ractive.set('content', "coming soon");
   }
 
   function render_markdown(chapter, key) {
