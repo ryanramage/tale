@@ -26,7 +26,8 @@
     "sjcl": "^1.0.0",
     "express": "git://github.com/blakeembrey/express.git#modular-routing",
     "mime": "^1.2.11",
-    "filereader-stream": "^0.1.0"
+    "filereader-stream": "^0.1.0",
+    "level": "^0.18.0"
   },
   "devDependencies": {
     "memdown": "^0.7.0",
