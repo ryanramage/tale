@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+var path = require('path'),
+    levelup = require('level'),
+    packager = require('../lib/packager'),
+    FileStore = require('../lib/file-store'),
+    argv = require('minimist')(process.argv.slice(2)),
+
+if (argv._.length === 0) package();
+if (argv._[0] === 'package') package();
+
+function package(){
+  var fs = FileStore(out_dir, {
+        js_in_manifest:   argv.no_js_in_manifest || true,
+        write_index_html: argv.no_index_html || true,
+        write_tale_js:    argv.no_tale_js || true
+      }),
+      dir = argv.i || __dirname,
+      out_dir = argv.o || __dirname + '/build';
+
+  packager( path.normalize(dir), fs, function(err, graph){
+    if (err) return console.error("Error:", err);
+    console.log("Story ID: ", graph.id);
+  })
+}
+
+
+
