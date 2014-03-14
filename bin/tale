@@ -2,17 +2,22 @@
 
 var fs = require('fs'),
     path = require('path'),
+    http = require('http'),
+    open = require('open'),
     read = require('read'),
     async = require('async'),
     mkdirp = require('mkdirp'),
+    connect = require('connect'),
     init = require('init-package-json'),
     packager = require('../lib/packager'),
     FileStore = require('../lib/file-store'),
-    argv = require('minimist')(process.argv.slice(2));
+    argv = require('minimist')(process.argv.slice(2)),
+    portrange = 45032;
 
 if (argv._.length === 0) package();
 if (argv._[0] === 'package') package();
 if (argv._[0] === 'init') initialize();
+if (argv._[0] === 'serve') serve();
 
 function package(){
   var dir = argv.i || '.',
@@ -73,3 +78,50 @@ function writeChapter(number, end, dir, cb){
 }
 
 
+function serve() {
+  var out_dir = argv.o || '.' + '/build',
+      middleware = []
+      portrange = argv._[1] || portrange;
+
+
+  if (!argv.offline) {
+    middleware.push(function(req, resp, next){
+      if (req.url == '/story.appcache') {
+        resp.writeHead(404, {});
+        return resp.end();
+      }
+      next();
+    });
+  }
+
+  middleware.push( connect.static(path.resolve(out_dir)  ));
+  middleware.push(connect.directory(  path.resolve(out_dir)  ))
+  var app = connect.apply(null, middleware);
+
+  getPort(app, function(port){
+
+    server
+      .listen(port, null)
+      .on('listening', function() {
+        console.log('server running on port: ', port);
+        open('http://localhost:' + port)
+      })
+
+  })
+}
+
+function getPort (app, cb) {
+  var port = portrange
+  portrange += 1;
+
+  server = http.createServer(app)
+  server.listen(port, function (err) {
+    server.once('close', function () {
+      cb(port)
+    })
+    server.close()
+  })
+  server.on('error', function (err) {
+    getPort(app, cb)
+  })
+}

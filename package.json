@@ -31,7 +31,9 @@
     "mkdirp": "^0.3.5",
     "minimist": "0.0.8",
     "init-package-json": "0.0.15",
-    "read": "^1.0.5"
+    "read": "^1.0.5",
+    "connect": "^2.14.2",
+    "open": "0.0.4"
   },
   "devDependencies": {
     "concat-stream": "^1.4.3",
