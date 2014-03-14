@@ -1,13 +1,18 @@
 #!/usr/bin/env node
 
-var path = require('path'),
-    levelup = require('level'),
+var fs = require('fs'),
+    path = require('path'),
+    read = require('read'),
+    async = require('async'),
+    mkdirp = require('mkdirp'),
+    init = require('init-package-json'),
     packager = require('../lib/packager'),
     FileStore = require('../lib/file-store'),
     argv = require('minimist')(process.argv.slice(2));
 
 if (argv._.length === 0) package();
 if (argv._[0] === 'package') package();
+if (argv._[0] === 'init') initialize();
 
 function package(){
   var dir = argv.i || '.',
@@ -24,5 +29,47 @@ function package(){
   })
 }
 
+function initialize() {
+  var dir = process.cwd();
+  var initFile = require.resolve('../lib/basic-init.js')
+  init(dir, initFile, function (err, data) {
+    if (err) return console.error('could not write package.json');
+
+    read({prompt: "Number of chapters to create? ", default: "2" }, function (err, num) {
+      if (err) return console.error('I did not understand that.');
+      var num_chapters = Number(num);
+      async.times(num_chapters, function(n, cb){
+        var human = n + 1;
+        var end = (human == num_chapters);
+        writeChapter(human, end, dir, cb);
+      }, function(err){
+        console.log('done.');
+      })
+    })
+
+  })
+}
+
+
+function writeChapter(number, end, dir, cb){
+  var chapter = {
+    "type": "text",
+    "text" : "Once upon a time....",
+    "next": {}
+  }, next = {
+    "clue": "What is the password?",
+    "pass": "password"
+  };
+
+  if (end) {
+    chapter.text = "The End. Fin."
+    chapter.end_link = "http://place.com/whats_next"
+  } else {
+    chapter.next[ 'chapter' + (number + 1) ] = next;
+  }
+  var chapter_dir = path.resolve(dir, 'chapter' + number);
+  mkdirp.sync( chapter_dir );
+  fs.writeFile( path.resolve(chapter_dir, 'chapter.json') , JSON.stringify(chapter,null, 4), cb);
+}
 
 

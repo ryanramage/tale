@@ -29,7 +29,9 @@
     "mime": "^1.2.11",
     "filereader-stream": "^0.1.0",
     "mkdirp": "^0.3.5",
-    "minimist": "0.0.8"
+    "minimist": "0.0.8",
+    "init-package-json": "0.0.15",
+    "read": "^1.0.5"
   },
   "devDependencies": {
     "concat-stream": "^1.4.3",

@@ -11,12 +11,20 @@ install
 usage
 -----
 
-create a folder layout like the one in `tests/assets/story1`. It has a package.json
-which describes the story, and folders representing the chapters. When ready run
+Enter a empty directory and run `tale init` to help you start. eg
+
+    mkdir wibbile-wobble
+    cd wibble-wobble
+    tale init
+
+This will help you scafold out a story. It has a package.json
+which describes the story, and folders representing the chapters. Edit the chapters and make something fun!
+
+Then when ready run
 
     tale
 
-and this will generate a `build` dir that is totally offline enabled, and each chapter is encrypted/
+and this will generate a `build` dir that is totally offline enabled, and each chapter is encrypted.
 
 options
 -------
