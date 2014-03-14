@@ -54,7 +54,7 @@ define([
 
 
   function first_chapter() {
-    oboe('meta/package.json').done(function(pkg){
+    oboe('package.json').done(function(pkg){
       oboe('node/' + pkg.start_id).done(function(start_chapter){
         render_chapter(start_chapter);
       })
@@ -94,7 +94,6 @@ define([
       })
     } else {
       xxtea('file/' + file.id, key, true, function(err, md){
-        console.log(md);
         ractive.set('content', marked(md));
       })
     }

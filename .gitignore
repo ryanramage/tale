@@ -2,3 +2,4 @@ node_modules
 npm-debug.log
 html/jam/require.prod.js
 mydb
+html/js/tale.min.js

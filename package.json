@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/tape tests/*.js",
-    "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o jam/require.prod.js; cd ..; node server.js",
+    "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o js/tale.min.js; cd ..; node server.js",
     "devel": "npm run-script unminify; npm run-script web;",
     "web": "node server.js",
-    "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o jam/require.prod.js",
-    "unminify": "rm html/jam/require.prod.js",
+    "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o js/tale.min.js",
+    "minify": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o js/tale.min.js",
+    "unminify": "rm html/jam/tale.min.js",
     "browserify": "./node_modules/.bin/browserify lib/client/xxtea-decrypt.js  --standalone xxtea  > html/jam/xxtea.js"
   },
   "author": "Ryan Ramage",
@@ -27,7 +28,8 @@
     "express": "git://github.com/blakeembrey/express.git#modular-routing",
     "mime": "^1.2.11",
     "filereader-stream": "^0.1.0",
-    "level": "^0.18.0"
+    "level": "^0.18.0",
+    "mkdirp": "^0.3.5"
   },
   "devDependencies": {
     "memdown": "^0.7.0",
