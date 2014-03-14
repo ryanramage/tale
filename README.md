@@ -26,6 +26,13 @@ Then when ready run
 
 and this will generate a `build` dir that is totally offline enabled, and each chapter is encrypted.
 
+If you want to see it run in a browser:
+
+    tale serve
+
+
+
+
 options
 -------
 
