@@ -10,6 +10,7 @@ var fs = require('fs'),
     connect = require('connect'),
     init = require('init-package-json'),
     packager = require('../lib/packager'),
+    find_root = require('../lib/find-root'),
     FileStore = require('../lib/file-store'),
     argv = require('minimist')(process.argv.slice(2)),
     portrange = 45032;
@@ -20,8 +21,8 @@ if (argv._[0] === 'init') initialize();
 if (argv._[0] === 'serve') serve();
 
 function package(){
-  var dir = argv.i || '.',
-      out_dir = argv.o || '.' + '/build'
+  var dir = argv.i || find_root('.');
+   var out_dir = argv.o || path.resolve(dir, './build'),
       fs = FileStore(path.normalize(out_dir), {
         js_in_manifest:   argv.no_js_in_manifest || true,
         write_index_html: argv.no_index_html || true,
@@ -79,7 +80,8 @@ function writeChapter(number, end, dir, cb){
 
 
 function serve() {
-  var out_dir = argv.o || '.' + '/build',
+  var dir = argv.i || find_root('.'),
+      out_dir = argv.o || path.resolve(dir, './build'),
       middleware = []
       portrange = argv._[1] || portrange;
 
