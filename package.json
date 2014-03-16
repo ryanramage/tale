@@ -1,6 +1,6 @@
 {
   "name": "tale",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A location story telling platform",
   "main": "index.js",
   "scripts": {
@@ -38,7 +38,8 @@
   },
   "devDependencies": {
     "concat-stream": "^1.4.3",
-    "browserify": "^3.32.1"
+    "browserify": "^3.32.1",
+    "jamjs": "^0.2.17"
   },
   "jam": {
     "baseUrl": "html",

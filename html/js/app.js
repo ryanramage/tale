@@ -38,7 +38,7 @@ define([
 
     ractive.on('crack', function(e){
       var id = e.context.id,
-          pass = e.context.pass,
+          pass = e.context.pass + '',
           keypath = e.keypath,
           crack = crack_chapter.bind(null, id, pass, function(err, next){
             if (err) return ractive.set(keypath + '.error',"Invalid Password");
