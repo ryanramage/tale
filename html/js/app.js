@@ -122,6 +122,7 @@ define([
       if (chapter.type === 'text') render_text(chapter, key);
       if (chapter.type === 'markdown') render_markdown(chapter, key);
       if (chapter.type === 'audio') render_audio(chapter, key);
+      if (chapter.type === 'image') render_img(chapter, key);
       render_clues(chapter);
     }
 
@@ -129,12 +130,29 @@ define([
        ractive.set('content', chapter.text);
     }
 
+    function render_img(chapter, key) {
+      var filename = chapter.file;
+      var file = _.find(chapter.files, function(file){ return file.name === filename });
+      if (key) {
+        xxtea('file/' + file.id, key, false, function(err, imgdata){
+          var blob = new Blob([imgdata], {type: file.content_type});
+          var img_url = URL.createObjectURL(blob);
+          ractive.set('img', {url: img_url});
+        })
+      }
+      else {
+        ractive.set('img', {url: 'file/' + file.id});
+      }
+
+    }
+
+
     function render_audio(chapter, key) {
       var filename = chapter.file;
       var file = _.find(chapter.files, function(file){ return file.name === filename })
       xxtea('file/' + file.id, key, false, function(err, audio){
 
-        var blob = new Blob(audio, {type: file.content_type});
+        var blob = new Blob([audio], {type: file.content_type});
         var url = URL.createObjectURL(blob);
         var audio = new Audio(url);
         audio.play();

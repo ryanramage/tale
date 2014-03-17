@@ -1,5 +1,5 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.xxtea=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var tea = _dereq_('xxtea-stream'),
+var xxtea = _dereq_('xxtea-stream'),
     concat = _dereq_('concat-stream'),
     createReadStream = _dereq_('filereader-stream'),
     bops = _dereq_('bops');
@@ -12,7 +12,7 @@ module.exports = function(url, pass, as_string, cb){
 
   oReq.onload = function (oEvent) {
     createReadStream(oReq.response)
-      .pipe(new tea.Decrypt(bops.from(pass, 'base64')))
+      .pipe(new xxtea.Decrypt(bops.from(pass, 'base64')))
       .pipe(concat(function(contents) {
         if (as_string) return cb(null, bops.to(contents));
         else return cb(null, contents);
@@ -5014,7 +5014,7 @@ ConcatStream.prototype.inferEncoding = function (buff) {
 }
 
 ConcatStream.prototype.getBody = function () {
-  if (this.body.length === 0) return []
+  if (!this.encoding && this.body.length === 0) return []
   if (this.shouldInferEncoding) this.encoding = this.inferEncoding()
   if (this.encoding === 'array') return arrayConcat(this.body)
   if (this.encoding === 'string') return stringConcat(this.body)
@@ -7945,57 +7945,119 @@ function inherits (c, p, proto) {
 //new Child
 
 },{}],45:[function(_dereq_,module,exports){
-(function (process){
-var Transform = _dereq_('stream').Transform,
+(function (Buffer){
+var through = _dereq_('through'),
+    bops = _dereq_('bops'),
     util = _dereq_('util'),
     tea = _dereq_('./lib/TEA');
-    bops = _dereq_('bops');
 
-function Encrypt (key, opts) {
+
+function Encrypt(key, cb) {
+  if (!bops.is(key)) {
+    key = bops.from(key, 'utf8')
+  }
   if (key.length !== 16) throw new Error('Key must be 16 bytes');
   this.key = key;
-  Transform.call(this, opts);
+  if (!cb) cb = function() {}
+
+
+  var chunk = new Buffer(0),
+      self = this,
+      chunkSize = 3200;
+
+  var write = function (data) {
+    // Ensure that it's a Buffer
+    if (!Buffer.isBuffer(data)) {
+      data = new Buffer(data)
+    }
+    var remainingSize = chunkSize - chunk.length
+    chunk = Buffer.concat([chunk, data.slice(0, remainingSize)])
+    data = data.slice(remainingSize)
+
+    if (chunk.length === chunkSize) {
+      self.handle_chunk(chunk, this)
+
+      // Create as many full buffers of `chunkSize` as possible from `data`
+      while (data.length > chunkSize) {
+        self.handle_chunk(data.slice(0, chunkSize), this)
+        data = data.slice(chunkSize)
+      }
+
+      // Whatever data remains, set the chunk to that so the next `data` event
+      // or `end` event can queue it along
+      chunk = data
+    }
+  }
+  var end = function (data) {
+    self.handle_chunk(chunk, this);
+    this.queue(null);
+  }
+  return through(write, end)
 }
-util.inherits(Encrypt, Transform);
+
+Encrypt.prototype.handle_chunk = function(chunk, thr) {
+  var out = tea.encrypt(chunk, this.key);
+  thr.queue(out)
+}
+
 exports.Encrypt = Encrypt;
 
-Encrypt.prototype._write = function(chunk, encoding, callback) {
-  var out = EncryptBlock(chunk, this.key);
-  this.push(out);
-  callback();
-}
 
-
-function EncryptBlock(str, key) {
-  return tea.encrypt(str, key);
-}
-
-
-
-function Decrypt(key, opts) {
+function Decrypt(key, cb) {
+  if (!bops.is(key)) {
+    key = bops.from(key, 'utf8')
+  }
   if (key.length !== 16) throw new Error('Key must be 16 bytes');
   this.key = key;
-  Transform.call(this, opts);
+  if (!cb) cb = function() {}
+
+  var chunk = new Buffer(0),
+      self = this,
+      chunkSize = 3200;
+
+  var write = function (data) {
+    // Ensure that it's a Buffer
+    if (!Buffer.isBuffer(data)) {
+      data = new Buffer(data)
+    }
+    var remainingSize = chunkSize - chunk.length
+    chunk = Buffer.concat([chunk, data.slice(0, remainingSize)])
+    data = data.slice(remainingSize)
+
+    if (chunk.length === chunkSize) {
+      self.handle_chunk(chunk, this)
+
+      // Create as many full buffers of `chunkSize` as possible from `data`
+      while (data.length > chunkSize) {
+        self.handle_chunk(data.slice(0, chunkSize), this)
+        data = data.slice(chunkSize)
+      }
+
+      // Whatever data remains, set the chunk to that so the next `data` event
+      // or `end` event can queue it along
+      chunk = data
+    }
+  }
+  var end = function (data) {
+    self.handle_chunk(chunk, this, true);
+    this.queue(null);
+  }
+  return through(write, end)
 }
 
-util.inherits(Decrypt, Transform);
+
+Decrypt.prototype.handle_chunk = function(chunk, thr, truncate) {
+  var out = tea.decrypt(chunk, this.key, truncate);
+  thr.queue(out);
+}
+
 exports.Decrypt = Decrypt;
 
-Decrypt.prototype._write = function(chunk, encoding, callback) {
-  var out = DecryptBlock(chunk, this.key);
-  if (process.browser) this.push(bops.to(out));
-  else this.push(out);
-  callback();
-}
 
 
-function DecryptBlock(str, key) {
-  return tea.decrypt(str, key);
-}
 
-
-}).call(this,_dereq_("/Volumes/untitled/bitbucket/tale/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./lib/TEA":46,"/Volumes/untitled/bitbucket/tale/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":20,"bops":47,"stream":22,"util":30}],46:[function(_dereq_,module,exports){
+}).call(this,_dereq_("buffer").Buffer)
+},{"./lib/TEA":46,"bops":47,"buffer":15,"through":60,"util":30}],46:[function(_dereq_,module,exports){
 var bops = _dereq_('bops');
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -8020,7 +8082,9 @@ var Tea = {};  // Tea namespace
  * @returns {string} encrypted text
  */
 Tea.encrypt = function(plaintext, password) {
-    if (plaintext.length == 0) return('');  // nothing to encrypt
+
+    var total_length = plaintext.length;
+    if (total_length == 0) return('');  // nothing to encrypt
 
     // convert string to array of longs after converting any multi-byte chars to UTF-8
     var v = Tea.bufferToLongs(plaintext);
@@ -8046,7 +8110,7 @@ Tea.encrypt = function(plaintext, password) {
 
     // ---- </TEA> ----
 
-    var ciphertext = Tea.longToBuff(v);
+    var ciphertext = Tea.longToBuff(v, false);
 
     return ciphertext;
 }
@@ -8058,8 +8122,9 @@ Tea.encrypt = function(plaintext, password) {
  * @param {string} password   Password to be used for decryption (1st 16 chars)
  * @returns {string} decrypted text
  */
-Tea.decrypt = function(ciphertext, password) {
-    if (ciphertext.length == 0) return('');
+Tea.decrypt = function(ciphertext, password, truncate) {
+    var total_length = ciphertext.length;
+    if (total_length == 0) return('');
     var v = Tea.bufferToLongs(ciphertext);
     var k = Tea.bufferToLongs(password);
     var n = v.length;
@@ -8081,7 +8146,7 @@ Tea.decrypt = function(ciphertext, password) {
 
     // ---- </TEA> ----
 
-    var plaintext = Tea.longToBuff(v);
+    var plaintext = Tea.longToBuff(v, truncate);
 
     // strip trailing null chars resulting from filling 4-char blocks:
     //plaintext = plaintext.replace(/\0+$/,'');
@@ -8094,9 +8159,9 @@ Tea.decrypt = function(ciphertext, password) {
 // supporting functions
 
 Tea.bufferToLongs = function(buff) {  // convert string to array of longs, each containing 4 chars
+    var length = buff.length;
     // note chars must be within ISO-8859-1 (with Unicode code-point < 256) to fit 4/long
-    var l = new Array(Math.ceil(buff.length/4));
-
+    var l = new Array(Math.ceil(length/4));
     for (var i=0; i<l.length; i++) {
 
         var x = bops.readUInt8(buff, i*4);
@@ -8105,29 +8170,43 @@ Tea.bufferToLongs = function(buff) {  // convert string to array of longs, each 
         try {  x+= (bops.readUInt8(buff, i*4+3)<<24)  } catch(ignore){}
 
         l[i] = x;
-
     }
 
     return l;  // note running off the end of the string generates nulls since
 }              // bitwise operators treat NaN as 0
 
-Tea.longToBuff = function(l) {  // convert array of longs back to string
-    var a = bops.create(l.length * 4);
+Tea.longToBuff = function(l, truncate) {  // convert array of longs back to string
+    var bw = 0; // bytes written
+    var a = bops.create(l.length * 4),
+        b1,b2,b3,b4
+    var first = true;
 
     for (var i=0; i<l.length; i++) {
-        var b1 = l[i]      & 0xFF;
-        var b2 = l[i]>>>8  & 0xFF;
-        var b3 = l[i]>>>16 & 0xFF;
-        var b4 = l[i]>>>24 & 0xFF;
+        b1 = l[i]      & 0xFF;
+        b2 = l[i]>>>8  & 0xFF;
+        b3 = l[i]>>>16 & 0xFF;
+        b4 = l[i]>>>24 & 0xFF;
+
+        if (first) {
+            first = false;
+        }
 
 
-        bops.writeUInt8(a, b1, i*4);
+        bops.writeUInt8(a, b1, i*4)  ;
         bops.writeUInt8(a, b2, i*4+1);
         bops.writeUInt8(a, b3, i*4+2);
         bops.writeUInt8(a, b4, i*4+3);
     }
+    if (!truncate) return a;
 
-    return a;  // use Array.join() rather than repeated string appends for efficiency in IE
+    var end = a.length;
+    if (b4 === 0) end--;
+    if (b4 === 0 && b3 === 0) end--;
+    if (b4 === 0 && b3 === 0 && b2 === 0) end--;
+    if (b4 === 0 && b3 === 0 && b2 === 0 && b1 === 0) end--;
+
+    return bops.subarray(a, 0, end);
+
 }
 
 
@@ -8162,6 +8241,118 @@ module.exports=_dereq_(12)
 module.exports=_dereq_(13)
 },{"base64-js":48,"to-utf8":49}],59:[function(_dereq_,module,exports){
 module.exports=_dereq_(14)
-},{"./mapped.js":55}]},{},[1])
+},{"./mapped.js":55}],60:[function(_dereq_,module,exports){
+(function (process){
+var Stream = _dereq_('stream')
+
+// through
+//
+// a stream that does nothing but re-emit the input.
+// useful for aggregating a series of changing but not ending streams into one stream)
+
+exports = module.exports = through
+through.through = through
+
+//create a readable writable stream.
+
+function through (write, end, opts) {
+  write = write || function (data) { this.queue(data) }
+  end = end || function () { this.queue(null) }
+
+  var ended = false, destroyed = false, buffer = [], _ended = false
+  var stream = new Stream()
+  stream.readable = stream.writable = true
+  stream.paused = false
+
+//  stream.autoPause   = !(opts && opts.autoPause   === false)
+  stream.autoDestroy = !(opts && opts.autoDestroy === false)
+
+  stream.write = function (data) {
+    write.call(this, data)
+    return !stream.paused
+  }
+
+  function drain() {
+    while(buffer.length && !stream.paused) {
+      var data = buffer.shift()
+      if(null === data)
+        return stream.emit('end')
+      else
+        stream.emit('data', data)
+    }
+  }
+
+  stream.queue = stream.push = function (data) {
+//    console.error(ended)
+    if(_ended) return stream
+    if(data == null) _ended = true
+    buffer.push(data)
+    drain()
+    return stream
+  }
+
+  //this will be registered as the first 'end' listener
+  //must call destroy next tick, to make sure we're after any
+  //stream piped from here.
+  //this is only a problem if end is not emitted synchronously.
+  //a nicer way to do this is to make sure this is the last listener for 'end'
+
+  stream.on('end', function () {
+    stream.readable = false
+    if(!stream.writable && stream.autoDestroy)
+      process.nextTick(function () {
+        stream.destroy()
+      })
+  })
+
+  function _end () {
+    stream.writable = false
+    end.call(stream)
+    if(!stream.readable && stream.autoDestroy)
+      stream.destroy()
+  }
+
+  stream.end = function (data) {
+    if(ended) return
+    ended = true
+    if(arguments.length) stream.write(data)
+    _end() // will emit or queue
+    return stream
+  }
+
+  stream.destroy = function () {
+    if(destroyed) return
+    destroyed = true
+    ended = true
+    buffer.length = 0
+    stream.writable = stream.readable = false
+    stream.emit('close')
+    return stream
+  }
+
+  stream.pause = function () {
+    if(stream.paused) return
+    stream.paused = true
+    return stream
+  }
+
+  stream.resume = function () {
+    if(stream.paused) {
+      stream.paused = false
+      stream.emit('resume')
+    }
+    drain()
+    //may have become paused again,
+    //as drain emits 'data'.
+    if(!stream.paused)
+      stream.emit('drain')
+    return stream
+  }
+  return stream
+}
+
+
+}).call(this,_dereq_("/Volumes/untitled/bitbucket/tale/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"/Volumes/untitled/bitbucket/tale/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":20,"stream":22}]},{},[1])
 (1)
 });
