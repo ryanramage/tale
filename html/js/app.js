@@ -11,7 +11,8 @@ define([
   './hints',
   'text!../css/bootstrap.min.css',
   'text!../chapter.template.html',
-  'ractive-events-tap'
+  'ractive-events-tap',
+  'ractive-events-keys'
 ], function(
   $,
   _,

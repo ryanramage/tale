@@ -36,6 +36,11 @@ var jam = {
             "main": "dist/oboe-browser.js"
         },
         {
+            "name": "ractive-events-keys",
+            "location": "jam/ractive-events-keys",
+            "main": "Ractive-events-keys.js"
+        },
+        {
             "name": "ractive-events-tap",
             "location": "jam/ractive-events-tap",
             "main": "Ractive-events-tap.js"
@@ -101,6 +106,11 @@ if (typeof require !== "undefined" && require.config) {
             "main": "dist/oboe-browser.js"
         },
         {
+            "name": "ractive-events-keys",
+            "location": "jam/ractive-events-keys",
+            "main": "Ractive-events-keys.js"
+        },
+        {
             "name": "ractive-events-tap",
             "location": "jam/ractive-events-tap",
             "main": "Ractive-events-tap.js"
@@ -163,6 +173,11 @@ else {
             "name": "oboe",
             "location": "jam/oboe",
             "main": "dist/oboe-browser.js"
+        },
+        {
+            "name": "ractive-events-keys",
+            "location": "jam/ractive-events-keys",
+            "main": "Ractive-events-keys.js"
         },
         {
             "name": "ractive-events-tap",

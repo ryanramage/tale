@@ -6,8 +6,7 @@
     <p class="clue">{{clue}}</p>
     <div class="form-inline" role="form">
       <div class="form-group">
-          <label class="sr-only" for="exampleInputPassword2">Password</label>
-          <input type="password" class="form-control" value='{{.pass}}' placeholder="Password">
+          <input type="text" class="form-control" value='{{.pass}}' placeholder="Answer" on-enter='crack'>
       </div>
       <button type="button" class="btn btn-default" on-tap="crack">Next &raquo;</button>
       {{#.error}}
