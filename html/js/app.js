@@ -8,10 +8,24 @@ define([
   'marked',
   'Ractive',
   '../jam/xxtea',
+  './hints',
   'text!../css/bootstrap.min.css',
   'text!../chapter.template.html',
   'ractive-events-tap'
-], function($, _, director, oboe, sjcl, jscss, marked, Ractive, xxtea, bootstrap, chapter_t){
+], function(
+  $,
+  _,
+  director,
+  oboe,
+  sjcl,
+  jscss,
+  marked,
+  Ractive,
+  xxtea,
+  builtin_hints,
+  bootstrap,
+  chapter_t
+){
 
   function init(options) {
     var opts = options || {};
@@ -26,26 +40,58 @@ define([
     if (opts.routes) routes = _.extend(routes, opts.routes);
 
 
-    var ractive = new Ractive({
-      el: opts.el,
-      template: opts.template,
-      data: {
-        next: []
-      }
-    });
+    var invalid_count = 0,
+        chapter_hint_count = 0,
+        internal_hint_count = 0,
+        ractive = new Ractive({
+          el: opts.el,
+          template: opts.template,
+          data: {
+            chapter: null,
+            next: [],
+            all_hints: []
+          }
+        });
+
     router = director.Router(routes);
     router.init('/');
+
+    function clearInvalidMessage(keypath){
+      ractive.set(keypath + '.error','');
+    }
+
+    var clearInvalidDebounce = _.debounce(clearInvalidMessage, 1000);
 
     ractive.on('crack', function(e){
       var id = e.context.id,
           pass = e.context.pass + '',
           keypath = e.keypath,
+          next_hints = _.clone(e.context.hints),
           crack = crack_chapter.bind(null, id, pass, function(err, next){
-            if (err) return ractive.set(keypath + '.error',"Invalid Password");
+            if (err) return showErrorMsg(keypath, next_hints);
+            invalid_count = 0; chapter_hint_count = 0; internal_hint_count = 0;
+            ractive.set('all_hints', []);
             render_chapter(next.chapter, next.key);
           });
       setTimeout(crack, 0);
     });
+
+    function showErrorMsg(keypath, next_hints) {
+      if (invalid_count++ >= 3){
+        // show a hint
+        var hint;
+        if (next_hints && chapter_hint_count < next_hints.length ) hint = next_hints[chapter_hint_count++];
+        if (!hint) {
+          hint = builtin_hints[internal_hint_count++];
+        }
+        if (!hint) return;
+        var all_hints = ractive.get('all_hints');
+        all_hints.push(hint);
+        invalid_count = 0;
+      }
+      ractive.set(keypath + '.error',"Invalid Password");
+      return clearInvalidDebounce(keypath);
+    }
 
     function crack_chapter(key_id, pass, callback) {
       oboe('key/' + key_id).done(function(key_ct){
@@ -71,6 +117,7 @@ define([
     }
 
     function render_chapter(chapter, key) {
+      ractive.set('chapter', chapter);
       if (chapter.type === 'text') render_text(chapter, key);
       if (chapter.type === 'markdown') render_markdown(chapter, key);
       if (chapter.type === 'audio') render_audio(chapter, key);
