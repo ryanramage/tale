@@ -50,7 +50,8 @@ define([
           data: {
             chapter: null,
             next: [],
-            all_hints: []
+            all_hints: [],
+            unlocking: false
           }
         });
 
@@ -74,10 +75,12 @@ define([
             ractive.set('all_hints', []);
             render_chapter(next.chapter, next.key);
           });
+      ractive.set('unlocking', true);
       setTimeout(crack, 0);
     });
 
     function showErrorMsg(keypath, next_hints) {
+      ractive.set('unlocking', false);
       if (invalid_count++ >= 3){
         // show a hint
         var hint;
@@ -119,35 +122,44 @@ define([
 
     function render_chapter(chapter, key) {
       ractive.set('chapter', chapter);
-      if (chapter.type === 'text') render_text(chapter, key);
-      if (chapter.type === 'markdown') render_markdown(chapter, key);
-      if (chapter.type === 'audio') render_audio(chapter, key);
-      if (chapter.type === 'image') render_img(chapter, key);
-      render_clues(chapter);
+
+      function done(err){
+        render_clues(chapter);
+        ractive.set('unlocking', false);
+      }
+
+      if (chapter.type === 'text') render_text(chapter, key, done);
+      if (chapter.type === 'markdown') render_markdown(chapter, key, done);
+      if (chapter.type === 'audio') render_audio(chapter, key, done);
+      if (chapter.type === 'image') render_img(chapter, key, done);
+
     }
 
-    function render_text(chapter, key){
+    function render_text(chapter, key, done){
        ractive.set('content', chapter.text);
+       done();
     }
 
-    function render_img(chapter, key) {
+    function render_img(chapter, key, done) {
       var filename = chapter.file;
       var file = _.find(chapter.files, function(file){ return file.name === filename });
       if (key) {
         xxtea('file/' + file.id, key, false, function(err, imgdata){
           var blob = new Blob([imgdata], {type: file.content_type});
           var img_url = URL.createObjectURL(blob);
-          ractive.set('img', {url: img_url});
+          ractive.set('chapter.img', {url: img_url});
+          done();
         })
       }
       else {
-        ractive.set('img', {url: 'file/' + file.id});
+        ractive.set('chapter.img', {url: 'file/' + file.id});
+        done();
       }
 
     }
 
 
-    function render_audio(chapter, key) {
+    function render_audio(chapter, key, done) {
       var filename = chapter.file;
       var file = _.find(chapter.files, function(file){ return file.name === filename })
       xxtea('file/' + file.id, key, false, function(err, audio){
@@ -156,20 +168,22 @@ define([
         var url = URL.createObjectURL(blob);
         var audio = new Audio(url);
         audio.play();
-        console.log('audio decoded. should play?');
+        ractive.set('content', "Playing audio");
+        done();
       })
-      ractive.set('content', "coming soon");
     }
 
-    function render_markdown(chapter, key) {
+    function render_markdown(chapter, key, done) {
       var file = _.find(chapter.files, function(file){ return file.name === 'README.md' })
       if (!key) {
         $.get('file/' + file.id, function(md){
           ractive.set('content', marked(md));
+          done();
         })
       } else {
         xxtea('file/' + file.id, key, true, function(err, md){
           ractive.set('content', marked(md));
+          done()
         })
       }
     }
