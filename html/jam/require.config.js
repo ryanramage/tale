@@ -51,6 +51,11 @@ var jam = {
             "main": "sjcl.js"
         },
         {
+            "name": "store",
+            "location": "jam/store",
+            "main": "store"
+        },
+        {
             "name": "text",
             "location": "jam/text",
             "main": "text.js"
@@ -121,6 +126,11 @@ if (typeof require !== "undefined" && require.config) {
             "main": "sjcl.js"
         },
         {
+            "name": "store",
+            "location": "jam/store",
+            "main": "store"
+        },
+        {
             "name": "text",
             "location": "jam/text",
             "main": "text.js"
@@ -188,6 +198,11 @@ else {
             "name": "sjcl",
             "location": "jam/sjcl",
             "main": "sjcl.js"
+        },
+        {
+            "name": "store",
+            "location": "jam/store",
+            "main": "store"
         },
         {
             "name": "text",

@@ -7,6 +7,7 @@ define([
   'jscss',
   'marked',
   'Ractive',
+  'store',
   '../jam/xxtea',
   './hints',
   'text!../css/bootstrap.min.css',
@@ -22,6 +23,7 @@ define([
   jscss,
   marked,
   Ractive,
+  store,
   xxtea,
   builtin_hints,
   bootstrap,
@@ -36,12 +38,16 @@ define([
 
     if (!opts.no_bootstrap) jscss.embed(bootstrap);
     var routes = {
-      '/': first_chapter,
+      '/*': show_chapter,
+      '/': first_chapter
+
     }
     if (opts.routes) routes = _.extend(routes, opts.routes);
 
 
-    var invalid_count = 0,
+    var current_chapter,
+        current_key,
+        invalid_count = 0,
         chapter_hint_count = 0,
         internal_hint_count = 0,
         ractive = new Ractive({
@@ -65,7 +71,7 @@ define([
     var clearInvalidDebounce = _.debounce(clearInvalidMessage, 1000);
 
     ractive.on('crack', function(e){
-      var id = e.context.id,
+      var id = e.context.id.toString(),
           pass = e.context.pass + '',
           keypath = e.keypath,
           next_hints = _.clone(e.context.hints),
@@ -73,11 +79,46 @@ define([
             if (err) return showErrorMsg(keypath, next_hints);
             invalid_count = 0; chapter_hint_count = 0; internal_hint_count = 0;
             ractive.set('all_hints', []);
-            render_chapter(next.chapter, next.key);
+            current_chapter = next.chapter;
+            current_key = next.key;
+            store_key(next.chapter.id, next.key);
+            router.setRoute('/' + next.chapter.id)
           });
       ractive.set('unlocking', true);
       setTimeout(crack, 0);
     });
+
+
+    function store_key(chapter_id, key){
+      store.set(chapter_id, key);
+    }
+
+    function show_chapter(chapter_id) {
+      // the current route is pointing to the currently unlocked
+      if (current_chapter && current_key && current_chapter.id === chapter_id){
+        return render_chapter(current_chapter, current_key)
+      }
+      var key = store.get(chapter_id);
+      if (!key) return showEncryptedMsg();
+
+      oboe('node/' + chapter_id).done(function(chapter_ct){
+        var chapter = JSON.parse( window.sjcl.decrypt(key, JSON.stringify(chapter_ct)));
+        chapter.id = chapter_id;
+        render_chapter(chapter, key)
+      })
+
+    }
+
+
+    function first_chapter() {
+      oboe('package.json').done(function(pkg){
+        oboe('node/' + pkg.start_id).done(function(start_chapter){
+          current_chapter = start_chapter;
+          current_key = null;
+          render_chapter(start_chapter);
+        })
+      });
+    }
 
     function showErrorMsg(keypath, next_hints) {
       ractive.set('unlocking', false);
@@ -103,6 +144,7 @@ define([
           var c2 = JSON.parse( window.sjcl.decrypt(pass, JSON.stringify(key_ct)));
           oboe('node/' + c2.to).done(function(chapter_ct){
             var chapter = JSON.parse( window.sjcl.decrypt(c2.key, JSON.stringify(chapter_ct)));
+            chapter.id = c2.to;
             return callback(null, {key: c2.key, chapter: chapter});
           })
         } catch(e) {
@@ -112,13 +154,7 @@ define([
     }
 
 
-    function first_chapter() {
-      oboe('package.json').done(function(pkg){
-        oboe('node/' + pkg.start_id).done(function(start_chapter){
-          render_chapter(start_chapter);
-        })
-      });
-    }
+
 
     function render_chapter(chapter, key) {
       ractive.set('chapter', chapter);
