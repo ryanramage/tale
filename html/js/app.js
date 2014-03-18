@@ -215,9 +215,9 @@ define([
 
     function render_clues(chapter) {
       ractive.set('next', []);
-      var names = _.keys(chapter.next);
+      var names = _.keys(chapter.next_folder);
       _.each(names, function(name, i){
-        ractive.set('next[' + i + ']', chapter.next[name]);
+        ractive.set('next[' + i + ']', chapter.next_folder[name]);
       })
     }
 

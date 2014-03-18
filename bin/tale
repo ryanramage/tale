@@ -61,8 +61,8 @@ function writeChapter(number, end, dir, cb){
   var chapter = {
     "type": "text",
     "text" : "Once upon a time....",
-    "next": {}
-  }, next = {
+    "next_folder": {}
+  }, next_folder = {
     "clue": "What is the password?",
     "pass": "password"
   };
@@ -71,7 +71,7 @@ function writeChapter(number, end, dir, cb){
     chapter.text = "The End. Fin."
     chapter.end_link = "http://place.com/whats_next"
   } else {
-    chapter.next[ 'chapter' + (number + 1) ] = next;
+    chapter.next_folder[ 'chapter' + (number + 1) ] = next_folder;
   }
   var chapter_dir = path.resolve(dir, 'chapter' + number);
   mkdirp.sync( chapter_dir );
