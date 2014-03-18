@@ -182,11 +182,36 @@ define([
         })
       } else {
         xxtea('file/' + file.id, key, true, function(err, md){
-          ractive.set('content', marked(md));
+
+          var image_post_process = [];
+          var renderer = new marked.Renderer();
+          renderer.image = function (href, title, text) {
+            var img = _.find(chapter.files, function(file){ return file.name === href })
+            if (img) {
+              image_post_process.push(img);
+              return '<img id="'+ img.id +'" src="" title="' + title + '" alt="' + text + '" />';
+            }
+            else return '<img src="'+ href +'" title="' + title + '" alt="' + text + '" />';
+          }
+
+          ractive.set('content', marked(md, { renderer: renderer }));
+          markdown_image_replace(image_post_process, key);
           done()
         })
       }
     }
+
+    function markdown_image_replace(images, key) {
+      _.each(images, function(image){
+        xxtea('file/' + image.id, key, false, function(err, image_data){
+
+          var blob = new Blob([image_data], {type: image.content_type});
+          var url = URL.createObjectURL(blob);
+          $('#' + image.id).attr('src', url);
+        })
+      })
+    }
+
 
     function render_clues(chapter) {
       ractive.set('next', []);
