@@ -88,6 +88,11 @@ define([
       setTimeout(crack, 0);
     });
 
+    ractive.on('end_link', function(e){
+      // we might want to add some query params here
+      window.location = e.context.chapter.end_link;
+    })
+
 
     function store_key(chapter_id, key){
       store.set(chapter_id, key);

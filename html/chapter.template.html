@@ -38,5 +38,10 @@
           </div>
       </div>
     {{/next}}
+    {{^next}}
+      {{#chapter.end_link}}
+      <button class="btn btn-primary" on-tap="end_link">Next &raquo;</button>
+      {{/chapter.end_link}}
+    {{/next}}
   </div>
 </div>
