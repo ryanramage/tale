@@ -169,10 +169,25 @@ define([
         ractive.set('unlocking', false);
       }
 
-      if (chapter.type === 'text') render_text(chapter, key, done);
-      if (chapter.type === 'markdown') render_markdown(chapter, key, done);
-      if (chapter.type === 'audio') render_audio(chapter, key, done);
-      if (chapter.type === 'image') render_img(chapter, key, done);
+      if (chapter.type === 'text') return render_text(chapter, key, done);
+      if (chapter.type === 'markdown') return render_markdown(chapter, key, done);
+      if (chapter.type === 'audio') return render_audio(chapter, key, done);
+      if (chapter.type === 'image') return render_img(chapter, key, done);
+
+      // try loading a plugin
+      require(['plugins/' + chapter.type], function (plugin) {
+        var args = {
+          ractive: ractive,
+          chapter: chapter,
+          key: key,
+          xxtea: xxtea
+        }
+        plugin(args, done);
+      }, function(err){
+        console.log('load error');
+        done();
+      });
+
 
     }
 
