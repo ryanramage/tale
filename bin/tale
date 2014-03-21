@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 var fs = require('fs'),
+    url = require('url'),
     path = require('path'),
     http = require('http'),
+    glob = require('glob'),
     open = require('open'),
     read = require('read'),
     async = require('async'),
     mkdirp = require('mkdirp'),
     connect = require('connect'),
+    request = require('request'),
     init = require('init-package-json'),
     packager = require('../lib/packager'),
     find_root = require('../lib/find-root'),
@@ -19,6 +22,7 @@ if (argv._.length === 0) package();
 if (argv._[0] === 'package') package();
 if (argv._[0] === 'init') initialize();
 if (argv._[0] === 'serve') serve();
+if (argv._[0] === 'publish') publish();
 
 function package(){
   var dir = argv.i || find_root('.');
@@ -34,6 +38,34 @@ function package(){
     console.log("Story ID: ", graph.id);
   })
 }
+
+function publish() {
+  var dir = argv.i || find_root('.'),
+      build_dir = argv.o || path.resolve(dir, './build'),
+      dest = argv._[1] || "http://t4.io",
+      endpoint = url.resolve(dest, '/publish');
+
+
+  glob('**/*', {cwd: build_dir, mark: true }, function(err, files){
+    var r = request.post(endpoint, function(err, resp, body){
+      if (err) return console.error("Upload Failed: ", err);
+      var resp = JSON.parse(body);
+      var location = url.resolve(dest, resp.id) + '/';
+
+      if (resp.msg) console.log('Server message: ', resp.msg);
+      console.log('Upload success, available at:');
+      console.log(location);
+    })
+    var form = r.form()
+    for (var i=0; i<files.length; i++){
+      var file = files[i];
+      if (! /\/$/.test(file)) { // ignore directories (ending in / )
+        form.append(files[i], fs.createReadStream(path.join(build_dir, files[i])));
+      }
+    }
+  })
+}
+
 
 function initialize() {
   var dir = process.cwd();

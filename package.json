@@ -34,7 +34,9 @@
     "read": "^1.0.5",
     "connect": "^2.14.2",
     "open": "0.0.4",
-    "rimraf": "^2.2.6"
+    "rimraf": "^2.2.6",
+    "request": "^2.34.0",
+    "glob": "^3.2.9"
   },
   "devDependencies": {
     "concat-stream": "^1.4.3",
