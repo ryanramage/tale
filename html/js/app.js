@@ -233,8 +233,19 @@ define([
       var file = _.find(chapter.files, function(file){ return file.name === 'README.md' })
       if (!key) {
         $.get('file/' + file.id, function(md){
-          ractive.set('content', marked(md));
-          done();
+          var image_post_process = [];
+          var renderer = new marked.Renderer();
+          renderer.image = function (href, title, text) {
+            var img = _.find(chapter.files, function(file){ return file.name === href })
+            if (img) {
+              image_post_process.push(img);
+              return '<img id="'+ img.id +'" src="file/'+ img.id +'" title="' + title + '" alt="' + text + '" />';
+            }
+            else return '<img src="'+ href +'" title="' + title + '" />';
+          }
+
+          ractive.set('content', marked(md, { renderer: renderer }));
+          done()
         })
       } else {
         xxtea('file/' + file.id, key, true, function(err, md){
