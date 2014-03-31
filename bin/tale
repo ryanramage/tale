@@ -137,8 +137,8 @@ function serve() {
     server
       .listen(port, null)
       .on('listening', function() {
-        console.log('server running on port: ', port);
-        open('http://localhost:' + port)
+        console.log('server running: ', 'http://localhost:' + port);
+        if (argv.b) open('http://localhost:' + port)
       })
 
   })
