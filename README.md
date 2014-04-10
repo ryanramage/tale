@@ -1,7 +1,10 @@
 Tale
 =====
 
-Offline-first story based games, that gets the crowd moving.
+Location story telling. Offline-first story based games, that gets the crowd moving.
+
+For now, see the wiki: https://github.com/ryanramage/tale/wiki
+
 
 install
 -------
