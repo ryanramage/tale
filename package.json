@@ -46,5 +46,11 @@
   "jam": {
     "baseUrl": "html",
     "packageDir": "html/jam"
-  }
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/ryanramage/tale.git"
+    }
+  ]
 }
