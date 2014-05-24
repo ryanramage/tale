@@ -1,7 +1,9 @@
 Tale
 =====
 
-Location story telling. Offline-first story based games, that gets the crowd moving.
+![Stones](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRKyKW_fKXBbqj099VOTKEplgd6UvLox8wzF6HFSScVc8SO6rMx)
+
+Offline-first, location based story telling. Create tales that get people moving.
 
 For now, see the wiki: https://github.com/ryanramage/tale/wiki
 
@@ -23,40 +25,26 @@ Enter a empty directory and run `tale init` to help you start. eg
 This will help you scafold out a story. It has a package.json
 which describes the story, and folders representing the chapters. Edit the chapters and make something fun!
 
-Then when ready run
+To build the html5 app the will play the story, run
 
-    tale
+    tale package
 
-and this will generate a `build` dir that is totally offline enabled, and each chapter is encrypted.
+and this will generate a `build` dir that is totally offline enabled, with each chapter is encrypted.
 
-If you want to see it run in a browser:
+If you want to test it in a browser:
 
     tale serve
 
-
-
-
-options
+Publish
 -------
 
-You can pass in options to the tale command
+When your story is ready, just do
 
-   tale -i inputdir -o output dir
+    tale publish
 
-Also you can control some of the output
+This will publish it to http://t4.io as public story.
 
- - Dont add the js file in the story.manifest file
-
-    --no_js_in_manifest
-
- - Dont generate the index.html file
-
-    --no_index_html
-
- - Done generate the tale.min.js file
-
-    --no_tale_js
+If you choose to host is somewhere else, just copy the build directory to any http server.
 
 
-This is really early and a lot will be in flux. But watch this space.
 
