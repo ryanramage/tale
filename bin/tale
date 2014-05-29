@@ -26,8 +26,9 @@ if (argv._[0] === 'publish') publish();
 
 function package(){
   var dir = argv.i || find_root('.');
-   var out_dir = argv.o || path.resolve(dir, './build'),
-      fs = FileStore(path.normalize(out_dir), {
+  var story_dir = argv.o || path.resolve(dir, './build'),
+      proof_dir = argv.p || path.resolve(dir, './proofs'),
+      fs = FileStore(path.normalize(story_dir), path.normalize(proof_dir), {
         js_in_manifest:   argv.no_js_in_manifest || true,
         write_index_html: argv.no_index_html || true,
         write_tale_js:    argv.no_tale_js || true
@@ -42,9 +43,12 @@ function package(){
 function publish() {
   var dir = argv.i || find_root('.'),
       build_dir = argv.o || path.resolve(dir, './build'),
+      proof_file = argv.p || path.resolve(dir, './proofs/proofs.json'),
       dest = argv._[1] || "http://t4.io",
       endpoint = url.resolve(dest, '/publish');
 
+  var has_proofs = null;
+  try { has_proofs = fs.statSync(proof_file) } catch(e){}
 
   glob('**/*', {cwd: build_dir, mark: true }, function(err, files){
     var r = request.post(endpoint, function(err, resp, body){
@@ -57,6 +61,9 @@ function publish() {
       console.log(location);
     })
     var form = r.form()
+    if (has_proofs){
+      form.append('proofs.json', fs.createReadStream(proof_file));
+    }
     for (var i=0; i<files.length; i++){
       var file = files[i];
       if (! /\/$/.test(file)) { // ignore directories (ending in / )
@@ -127,6 +134,18 @@ function serve() {
       next();
     });
   }
+  middleware.push(function(req, resp, next){
+      if (req.url == '/api') {
+        resp.write(JSON.stringify({ok: true}));
+        return resp.end();
+      }
+      if (req.url == '/time') {
+        resp.write(JSON.stringify({ok: true, time_ms: 10000}));
+        return resp.end();
+      }
+      next();
+  })
+
 
   middleware.push( connect.static(path.resolve(out_dir)  ));
   middleware.push(connect.directory(  path.resolve(out_dir)  ))

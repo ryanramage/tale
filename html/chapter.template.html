@@ -38,10 +38,46 @@
           </div>
       </div>
     {{/next}}
-    {{^next}}
-      {{#chapter.end_link}}
-      <button class="btn btn-primary" on-tap="end_link">Next &raquo;</button>
-      {{/chapter.end_link}}
-    {{/next}}
   </div>
 </div>
+{{^next}}
+<div class="row">
+  <div class="col-md-12">
+
+
+
+        <div class="well">
+          <h3>Story End</h3>
+          <h5>{{chapter.proof}}</h5>
+
+          {{^submitted}}
+            {{#network_available}}
+            <button class="btn btn-primary" on-tap="submit_time">Submit Time &raquo;</button>
+            {{/network_available}}
+            {{^network_available}}
+              <p>If you want to submit your time, please connect to the internet.</p>
+            {{/network_available}}
+
+            {{#time_err}}
+              <b>Failed to submit</b>
+            {{/time_err}}
+          {{/submitted}}
+
+          {{#submitted}}
+            <p>
+            Finish: {{time.end_pretty}}
+            </p>
+            <p>
+            Time: {{time.pretty}} (hh:mm:ss)
+            </p>
+            {{#chapter.end_link}}
+            <button class="btn btn-primary" on-tap="end_link">Next &raquo;</button>
+            {{/chapter.end_link}}
+          {{/submitted}}
+        </div>
+
+
+
+  </div>
+</div>
+{{/next}}

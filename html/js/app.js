@@ -50,6 +50,7 @@ define([
         invalid_count = 0,
         chapter_hint_count = 0,
         internal_hint_count = 0,
+        check_availablity_interval,
         ractive = new Ractive({
           el: opts.el,
           template: opts.template,
@@ -91,6 +92,39 @@ define([
     ractive.on('end_link', function(e){
       // we might want to add some query params here
       window.location = e.context.chapter.end_link;
+    })
+
+    ractive.on('submit_time', function(e){
+      oboe({
+        url: './time',
+        method: 'POST',
+        body: {
+          chapter_id: e.context.chapter.id,
+          proof: e.context.chapter.proof
+        }
+      })
+      .done(function(resp){
+        ractive.set('submitted', true);
+        if (resp.ok && resp.time_ms) {
+          var totalSec = resp.time_ms / 1000;
+          var hours = parseInt( totalSec / 3600 ) % 24;
+          var minutes = parseInt( totalSec / 60 ) % 60;
+          var seconds = parseInt(totalSec % 60, 10);
+
+          resp.pretty = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+          resp.end_pretty = new Date(resp.end);
+
+          ractive.set('time', resp);
+          store.set(e.context.chapter.id + '-time', resp);
+       }
+
+
+      })
+      .fail(function(err){
+        console.log('failed', err);
+        ractive.set('time_err', err);
+      })
+
     })
 
 
@@ -286,6 +320,34 @@ define([
       _.each(names, function(name, i){
         ractive.set('next[' + i + ']', chapter.next_folder[name]);
       })
+
+      if (names.length === 0){
+        // this is an end chapter
+
+        // check to see if this has been stored
+        var resp = store.get(chapter.id + '-time');
+        if (resp) {
+          ractive.set('submitted', true);
+          ractive.set('time', resp);
+          return;
+        }
+
+        // check api availability
+
+        var probe = function(cb){
+          oboe('/api')
+            .done(function(){
+              clearInterval(check_availablity_interval);
+              ractive.set('network_available', true)
+              cb();
+            })
+            .fail(cb)
+        }
+        probe(function(err){
+          if (err) check_availablity_interval = setInterval(probe, 4000);
+        })
+      }
+
     }
 
     return ractive;
