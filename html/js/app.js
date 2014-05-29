@@ -94,6 +94,21 @@ define([
       window.location = e.context.chapter.end_link;
     })
 
+    function improve_time(time){
+      if (time.end) {
+        time.time_ms = time.end - time.start;
+        var totalSec = time.time_ms / 1000;
+        var hours = parseInt( totalSec / 3600 ) % 24;
+        var minutes = parseInt( totalSec / 60 ) % 60;
+        var seconds = parseInt(totalSec % 60, 10);
+
+        time.pretty = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+        time.end_pretty = new Date(time.end);
+      }
+      return time;
+    }
+
+
     ractive.on('submit_time', function(e){
       oboe({
         url: './time',
@@ -104,18 +119,14 @@ define([
         }
       })
       .done(function(resp){
-        ractive.set('submitted', true);
-        if (resp.ok && resp.time_ms) {
-          var totalSec = resp.time_ms / 1000;
-          var hours = parseInt( totalSec / 3600 ) % 24;
-          var minutes = parseInt( totalSec / 60 ) % 60;
-          var seconds = parseInt(totalSec % 60, 10);
 
-          resp.pretty = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
-          resp.end_pretty = new Date(resp.end);
-
-          ractive.set('time', resp);
-          store.set(e.context.chapter.id + '-time', resp);
+        if (resp.ok) {
+          var time = improve_time(resp);
+          ractive.set('time', time);
+          if (time.end) {
+            ractive.set('submitted', true);
+            store.set(chapter_id + '--end', true)
+          }
        }
 
 
@@ -324,21 +335,20 @@ define([
       if (names.length === 0){
         // this is an end chapter
 
-        // check to see if this has been stored
-        var resp = store.get(chapter.id + '-time');
-        if (resp) {
+        if (store.get(chapter.id + '--end')) {
           ractive.set('submitted', true);
-          ractive.set('time', resp);
-          return;
+          console.log('submitted');
         }
 
         // check api availability
-
         var probe = function(cb){
-          oboe('/api')
-            .done(function(){
+          oboe('./time')
+            .done(function(resp){
               clearInterval(check_availablity_interval);
               ractive.set('network_available', true)
+              var time = improve_time(resp);
+              ractive.set('time', time);
+              if (time.end) ractive.set('submitted', true);
               cb();
             })
             .fail(cb)

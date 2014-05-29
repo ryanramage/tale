@@ -64,18 +64,20 @@
           {{/submitted}}
 
           {{#submitted}}
-            <p>
-            Finish: {{time.end_pretty}}
-            </p>
-            <p>
-            Time: {{time.pretty}} (hh:mm:ss)
-            </p>
-            {{#chapter.end_link}}
-            <button class="btn btn-primary" on-tap="end_link">Next &raquo;</button>
-            {{/chapter.end_link}}
+            {{#time.end}}
+              <p>Finish: {{time.end_pretty}}</p>
+              <p>Time: {{time.pretty}} (hh:mm:ss)</p>
+            {{/time.end}}
+            {{^time.user_id}}
+              <p>You have submitted Anonymously. If you want to claim your time, please login.</p>
+              <a class="btn btn-primary" href="./{{chapter.id}}/login">Login &raquo;</a>
+            {{/time.user_id}}
           {{/submitted}}
         </div>
 
+        {{#chapter.end_link}}
+            <button class="btn btn-primary" on-tap="end_link">Next &raquo;</button>
+        {{/chapter.end_link}}
 
 
   </div>
