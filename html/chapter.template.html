@@ -16,24 +16,34 @@
 
 
           <div class="form-inline" role="form">
-            <div class="form-group">
-                <input type="text" class="form-control" value='{{.pass}}' placeholder="Answer" on-enter='crack'>
-            </div>
-            {{^unlocking}}
-            <button type="button" class="btn btn-default" on-tap="crack">Next &raquo;</button>
-            {{/unlocking}}
-            {{#unlocking}}
-              <span class="unlocking">Unlocking, please wait...</span>
-            {{/unlocking}}
-            {{#.error}}
-              <div class="error">{{.error}}</div>
-            {{/.error}}
 
-            <ul class="hints">
-            {{#all_hints}}
-              <li class="hint">{{.}}</li>
-            {{/all_hints}}
-            </ul>
+            {{#unlocked}}
+              <div class="form-group">
+                  <input type="text" class="form-control" placeholder="UNLOCKED" disabled>
+              </div>
+              <a type="button" class="btn btn-default" href="#/{{unlocked}}">Next &raquo;</a>
+            {{/unlocked}}
+
+            {{^unlocked}}
+              <div class="form-group">
+                  <input type="text" class="form-control" value='{{.pass}}' placeholder="Answer" on-enter='crack'>
+              </div>
+              {{^unlocking}}
+              <button type="button" class="btn btn-default" on-tap="crack">Next &raquo;</button>
+              {{/unlocking}}
+              {{#unlocking}}
+                <span class="unlocking">Unlocking, please wait...</span>
+              {{/unlocking}}
+              {{#.error}}
+                <div class="error">{{.error}}</div>
+              {{/.error}}
+
+              <ul class="hints">
+              {{#all_hints}}
+                <li class="hint">{{.}}</li>
+              {{/all_hints}}
+              </ul>
+            {{/unlocked}}
 
           </div>
       </div>

@@ -82,7 +82,7 @@ define([
             ractive.set('all_hints', []);
             current_chapter = next.chapter;
             current_key = next.key;
-            store_key(next.chapter.id, next.key);
+            store_key(id, next.chapter.id, next.key);
             router.setRoute('/' + next.chapter.id)
           });
       ractive.set('unlocking', true);
@@ -139,7 +139,8 @@ define([
     })
 
 
-    function store_key(chapter_id, key){
+    function store_key(clue_id, chapter_id, key){
+      store.set(clue_id, chapter_id);
       store.set(chapter_id, key);
     }
 
@@ -329,7 +330,9 @@ define([
       ractive.set('next', []);
       var names = _.keys(chapter.next_folder);
       _.each(names, function(name, i){
-        ractive.set('next[' + i + ']', chapter.next_folder[name]);
+        var ch = chapter.next_folder[name];
+        ch.unlocked = store.get(ch.id);
+        ractive.set('next[' + i + ']', ch);
       })
 
       if (names.length === 0){
@@ -337,7 +340,6 @@ define([
 
         if (store.get(chapter.id + '--end')) {
           ractive.set('submitted', true);
-          console.log('submitted');
         }
 
         // check api availability
