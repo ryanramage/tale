@@ -55,6 +55,7 @@ define([
           el: opts.el,
           template: opts.template,
           data: {
+            appcache_loading: true,
             chapter: null,
             next: [],
             all_hints: [],
@@ -213,6 +214,7 @@ define([
       function done(err){
         render_clues(chapter);
         ractive.set('unlocking', false);
+        ractive.set('appcache_loading', false);
       }
 
       if (chapter.type === 'text') return render_text(chapter, key, done);
