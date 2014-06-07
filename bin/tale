@@ -18,8 +18,12 @@ var fs = require('fs'),
     find_root = require('../lib/find-root'),
     FileStore = require('../lib/file-store'),
     argv = require('minimist')(process.argv.slice(2)),
+    cached_creds_file = path.resolve(process.env.HOME, '.tale.json'),
+    cached_creds,
     auth_fails = 0,
     portrange = 45032;
+
+try { cached_creds = require(cached_creds_file) } catch(e){}
 
 if (argv._.length === 0) package();
 if (argv._[0] === 'package') package();
@@ -51,8 +55,9 @@ function publish(_email, _token) {
       build_dir = argv.o || path.resolve(dir, './build'),
       proof_file = argv.p || path.resolve(dir, './proofs/proofs.json'),
       dest = argv._[1] || "http://t4.io",
-      email = _email || argv._[2],
-      token = _token || argv._[3],
+      creds = lookup_creds(dest),
+      email = _email || creds.email || argv._[2],
+      token = _token || creds.token || argv._[3],
       pkg = require(build_dir + '/package.json'),
       endpoint;
 
@@ -82,6 +87,7 @@ function publish(_email, _token) {
       if (resp.msg) console.log('Server message: ', resp.msg);
       console.log('Upload success, available at:');
       console.log(location);
+      save_creds(dest, creds, email, token)
     })
     var form = r.form()
     if (has_proofs){
@@ -94,6 +100,33 @@ function publish(_email, _token) {
       }
     }
   })
+}
+
+
+function lookup_creds(host){
+  if (!cached_creds) return {};
+  if (!cached_creds[host]) return {};
+  return cached_creds[host];
+}
+
+function save_creds(host, creds, email, token) {
+  var to_save = false;
+  if (!cached_creds){
+    to_save = true;
+    cached_creds = {};
+  }
+  if (!cached_creds[host]){
+    to_save = true;
+    cached_creds[host] = { email: email, token: token  }
+  }
+  if (email !== cached_creds[host].email || token !== cached_creds[host].token) {
+    to_save = true;
+    cached_creds[host] = { email: email, token: token  }
+  }
+  if (!to_save) return;
+  fs.writeFileSync(cached_creds_file, JSON.stringify(cached_creds, 0, 2));
+  console.log('cached credentials in ', cached_creds_file)
+
 }
 
 
