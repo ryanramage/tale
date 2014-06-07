@@ -11,11 +11,14 @@ var fs = require('fs'),
     mkdirp = require('mkdirp'),
     connect = require('connect'),
     request = require('request'),
+    readline = require('readline'),
+    md5 = require('md5-component'),
     init = require('init-package-json'),
     packager = require('../lib/packager'),
     find_root = require('../lib/find-root'),
     FileStore = require('../lib/file-store'),
     argv = require('minimist')(process.argv.slice(2)),
+    auth_fails = 0,
     portrange = 45032;
 
 if (argv._.length === 0) package();
@@ -33,26 +36,46 @@ function package(){
         write_index_html: argv.no_index_html || true,
         write_tale_js:    argv.no_tale_js || true
       });
-
+  console.log('starting...')
   packager( path.normalize(dir), fs, function(err, graph){
     if (err) return console.error("Error:", err);
-    console.log("Story ID: ", graph.id);
+
+    console.log('\tbuild dir: ', story_dir);
+    console.log('\tproof dir: ', proof_dir);
+    console.log("Build complete. ");
   })
 }
 
-function publish() {
+function publish(_email, _token) {
   var dir = argv.i || find_root('.'),
       build_dir = argv.o || path.resolve(dir, './build'),
       proof_file = argv.p || path.resolve(dir, './proofs/proofs.json'),
       dest = argv._[1] || "http://t4.io",
-      endpoint = url.resolve(dest, '/publish');
+      email = _email || argv._[2],
+      token = _token || argv._[3],
+      pkg = require(build_dir + '/package.json'),
+      endpoint;
+
+  if (!email || !token) {
+    return prompt();
+  }
+  endpoint = url.resolve(dest, '/publish/' + md5(email) + '/' + pkg.name)
+
+  console.log('posting to', endpoint);
 
   var has_proofs = null;
   try { has_proofs = fs.statSync(proof_file) } catch(e){}
 
+  var req_opts = {
+    url: endpoint,
+    qs: { access_token: token }
+  }
+
   glob('**/*', {cwd: build_dir, mark: true }, function(err, files){
-    var r = request.post(endpoint, function(err, resp, body){
+    var r = request.post(req_opts, function(err, resp, body){
       if (err) return console.error("Upload Failed: ", err);
+      if (resp.statusCode === 401) return prompt(true);
+
       var resp = JSON.parse(body);
       var location = url.resolve(dest, resp.id) + '/';
 
@@ -71,6 +94,26 @@ function publish() {
       }
     }
   })
+}
+
+
+function prompt(failure){
+  if (failure) {
+    if (auth_fails++ >= 3) return console.log('Aborting. Max attempts reached.');
+    console.log('Authentication failure');
+  }
+  var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.question("email: ", function(_email) {
+    rl.question("token: ", function(_token){
+      publish(_email, _token);
+      rl.close();
+    })
+
+  });
 }
 
 
