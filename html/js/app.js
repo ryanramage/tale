@@ -11,6 +11,7 @@ define([
   '../jam/xxtea',
   './hints',
   'text!../css/bootstrap.min.css',
+  'text!../css/custom.css',
   'text!../chapter.template.html',
   'ractive-events-tap',
   'ractive-events-keys'
@@ -27,6 +28,7 @@ define([
   xxtea,
   builtin_hints,
   bootstrap,
+  styles,
   chapter_t
 ){
 
@@ -37,6 +39,7 @@ define([
     if (!opts.no_bootstrap) opts.no_bootstrap = false;
 
     if (!opts.no_bootstrap) jscss.embed(bootstrap);
+    if (!opts.no_styles) jscss.embed(styles);
     var routes = {
       '/*': show_chapter,
       '/': first_chapter
@@ -215,6 +218,7 @@ define([
         render_clues(chapter);
         ractive.set('unlocking', false);
         ractive.set('appcache_loading', false);
+        window.scrollTo(0, 0);
       }
 
       if (chapter.type === 'text') return render_text(chapter, key, done);
