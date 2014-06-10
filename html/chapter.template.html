@@ -1,6 +1,11 @@
 {{^appcache_loading}}
 <div class="row">
   <div class="col-md-12 chapter">
+    {{#chapter.embed}}
+      {{#youtube}}
+        <iframe width="400" height="315" src="{{embedURL}}" frameborder="0" allowfullscreen></iframe>
+      {{/youtube}}
+    {{/chapter.embed}}
     {{#chapter.img}}
     <div class="img">
       <img src="{{url}}" class="img-responsive" alt="Loading" />
@@ -8,7 +13,7 @@
     {{/chapter.img}}
 
 
-    <div>
+    <div class="content">
       {{{content}}}
     </div>
     {{#next}}

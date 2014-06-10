@@ -221,6 +221,7 @@ define([
         window.scrollTo(0, 0);
       }
 
+      if (chapter.type === 'embed') return render_embed(chapter, key, done);
       if (chapter.type === 'text') return render_text(chapter, key, done);
       if (chapter.type === 'markdown') return render_markdown(chapter, key, done);
       if (chapter.type === 'audio') return render_audio(chapter, key, done);
@@ -241,6 +242,17 @@ define([
       });
 
 
+    }
+
+    function render_embed(chapter, key, done) {
+      if (chapter.youtube) {
+        chapter.embed = {
+          youtube: true,
+          embedURL: 'http://www.youtube.com/embed/'+ chapter.youtube +'?autoplay=1&controls=0&modestbranding=1'
+        }
+        if (chapter.start) chapter.embed.embedURL += '&start=' + chapter.start;
+        if (chapter.end) chapter.embed.embedURL += '&end' + chapter.end;
+      }
     }
 
     function render_text(chapter, key, done){
