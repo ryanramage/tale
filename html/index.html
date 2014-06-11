@@ -5,18 +5,21 @@
   <meta name="description" content="">
   <meta name="author" content="">
   <style type="text/css">
-    .loader {margin: 6em auto; font-size: 10px; position: relative; text-indent: -9999em; border-top: 1.1em solid rgba(200, 200, 200, 0.2); border-right: 1.1em solid rgba(200, 200, 200, 0.2); border-bottom: 1.1em solid rgba(200, 200, 200, 0.2); border-left: 1.1em solid #111; -webkit-animation: load8 1.1s infinite linear; animation: load8 1.1s infinite linear; } .loader, .loader:after { border-radius: 50%;width: 10em;height: 10em;} @-webkit-keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } } @keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } }
+    #progress{width: 93px;margin: auto;font-size: 203%;position: relative;top: -43px;}  .loader {margin: 6em auto; font-size: 10px; position: relative; text-indent: -9999em; border-top: 1.1em solid rgba(200, 200, 200, 0.2); border-right: 1.1em solid rgba(200, 200, 200, 0.2); border-bottom: 1.1em solid rgba(200, 200, 200, 0.2); border-left: 1.1em solid #111; -webkit-animation: load8 1.1s infinite linear; animation: load8 1.1s infinite linear; } .loader, .loader:after { border-radius: 50%;width: 10em;height: 10em;} @-webkit-keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } } @keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div id="applicationCache"></div>
+  <div id="applicationCache"><div id="spinner"></div><div id="progress"></div></div>
   <div id="tale" class="container"></div>
 
 
 <script type="text/javascript">
 
   (function(){
-    var $loader = document.getElementById('applicationCache');
+    var $loader = document.getElementById('applicationCache'),
+        $spinner = document.getElementById('spinner'),
+        $progress = document.getElementById('progress');
+
     function allReady(){
       $loader.parentNode.removeChild($loader);
       require(['js/app'], function (app) { app() });
@@ -28,10 +31,12 @@
 
     }
     window.applicationCache.addEventListener('downloading', function(e){
-      $loader.classList.add('loader');
+      $spinner.classList.add('loader');
     }, false);
 
-
+    window.applicationCache.addEventListener('progress', function(e){
+      $progress.innerHTML = e.loaded + " / " + e.total;
+    }, false);
 
     window.applicationCache.addEventListener('updateready', onUpdateReady);
     if(window.applicationCache.status === window.applicationCache.UPDATEREADY) {
