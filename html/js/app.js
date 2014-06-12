@@ -189,7 +189,7 @@ define([
         all_hints.push(hint);
         invalid_count = 0;
       }
-      ractive.set(keypath + '.error',"Invalid Password");
+      ractive.set(keypath + '.error',"Invalid Answer");
       return clearInvalidDebounce(keypath);
     }
 
