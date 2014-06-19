@@ -174,8 +174,7 @@ function initialize() {
 
 function writeChapter(number, end, dir, cb){
   var chapter = {
-    "type": "text",
-    "text" : "Once upon a time....",
+    "type": "markdown",
     "next_folder": {}
   }, next_folder = {
     "clue": "What is the password?",
@@ -190,6 +189,7 @@ function writeChapter(number, end, dir, cb){
   }
   var chapter_dir = path.resolve(dir, 'chapter' + number);
   mkdirp.sync( chapter_dir );
+  fs.writeFileSync( path.resolve(chapter_dir, 'README.md'), 'Once upon a time...')
   fs.writeFile( path.resolve(chapter_dir, 'chapter.json') , JSON.stringify(chapter,null, 4), cb);
 }
 

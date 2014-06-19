@@ -13,25 +13,28 @@
   <div id="tale" class="container"></div>
 
 
+
 <script type="text/javascript">
 
   (function(){
     var $loader = document.getElementById('applicationCache'),
         $spinner = document.getElementById('spinner'),
-        $progress = document.getElementById('progress');
+        $progress = document.getElementById('progress'),
+        loaded = false;
 
     function allReady(){
-
+      if (loaded) return;
       require(['js/app'], function (app) {
-        app()
+        app();
         $loader.parentNode.removeChild($loader);
+        loaded = true;
       });
     }
+
 
     function onUpdateReady() {
       try { window.applicationCache.swapCache() } catch(e){}
       allReady()
-
     }
     window.applicationCache.addEventListener('downloading', function(e){
       $spinner.classList.add('loader');
@@ -39,6 +42,7 @@
 
     window.applicationCache.addEventListener('progress', function(e){
       $progress.innerHTML = e.loaded + " / " + e.total;
+      if (e.loaded === e.total) setTimeout(onUpdateReady, 500);
     }, false);
 
     window.applicationCache.addEventListener('updateready', onUpdateReady);
