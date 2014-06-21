@@ -22,17 +22,19 @@
         $progress = document.getElementById('progress'),
         loaded = false;
 
-    function allReady(){
-      if (loaded) return;
+    window.applicationCache.addEventListener('updateready', onUpdateReady);
+    window.applicationCache.addEventListener('cached', onUpdateReady, false)
+    window.applicationCache.addEventListener('noupdate', allReady, false)
+    window.applicationCache.addEventListener('error', allReady, false)
+
+    function allReady(e){
+      if (loaded) return; else loaded = true;
       require(['js/app'], function (app) {
         app();
         $loader.parentNode.removeChild($loader);
-        loaded = true;
       });
     }
-
-
-    function onUpdateReady() {
+    function onUpdateReady(e) {
       try { window.applicationCache.swapCache() } catch(e){}
       allReady()
     }
@@ -41,16 +43,14 @@
     }, false);
 
     window.applicationCache.addEventListener('progress', function(e){
-      $progress.innerHTML = e.loaded + " / " + e.total;
-      if (e.loaded === e.total) setTimeout(onUpdateReady, 500);
+      if (e.total) {
+        $progress.innerHTML = e.loaded + " / " + e.total;
+        if (e.loaded === e.total) setTimeout(onUpdateReady, 500);
+      }
     }, false);
-
-    window.applicationCache.addEventListener('updateready', onUpdateReady);
     if(window.applicationCache.status === window.applicationCache.UPDATEREADY) {
       onUpdateReady();
     }
-    window.applicationCache.addEventListener('noupdate', allReady, false)
-    window.applicationCache.addEventListener('error', allReady, false)
   })()
 
   function loadDev(){

@@ -250,8 +250,11 @@ define([
           youtube: true,
           embedURL: 'http://www.youtube.com/embed/'+ chapter.youtube +'?autoplay=1&controls=0&modestbranding=1'
         }
-        if (chapter.start) chapter.embed.embedURL += '&start=' + chapter.start;
-        if (chapter.end) chapter.embed.embedURL += '&end' + chapter.end;
+        if (chapter.start_time) chapter.embed.embedURL += '&start=' + chapter.start_time;
+        if (chapter.end_time) chapter.embed.embedURL += '&end=' + chapter.end_time;
+
+        ractive.set('chapter', chapter);
+        done();
       }
     }
 

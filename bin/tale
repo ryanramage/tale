@@ -9,6 +9,7 @@ var fs = require('fs'),
     read = require('read'),
     async = require('async'),
     mkdirp = require('mkdirp'),
+    uuid = require('node-uuid'),
     connect = require('connect'),
     request = require('request'),
     readline = require('readline'),
@@ -178,7 +179,7 @@ function writeChapter(number, end, dir, cb){
     "next_folder": {}
   }, next_folder = {
     "clue": "What is the password?",
-    "pass": "password"
+    "pass": uuid.v4().substr(0,5)
   };
 
   if (end) {
