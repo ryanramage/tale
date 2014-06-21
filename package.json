@@ -1,6 +1,6 @@
 {
   "name": "tale",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Location story telling",
   "main": "index.js",
   "scripts": {
