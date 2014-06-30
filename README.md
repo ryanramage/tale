@@ -5,7 +5,11 @@ Tale
 
 Offline-first, location based story telling. Create tales that get people moving.
 
-For now, see the wiki: https://github.com/ryanramage/tale/wiki
+Here is a very boring example, gfor your reference:
+
+http://t4.io/mrp9xw/
+
+Also, see the wiki: https://github.com/ryanramage/tale/wiki
 
 
 install
