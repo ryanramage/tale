@@ -7,11 +7,7 @@
     "test": "./node_modules/.bin/tape tests/*.js",
     "start": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o js/tale.min.js; cd ..; node server.js",
     "devel": "npm run-script unminify; npm run-script web;",
-    "web": "node server.js",
-    "bundle": "cd html; ../node_modules/.bin/jam compile --no-minify --no-license  -i js/app -o js/tale.min.js",
-    "minify": "cd html; ../node_modules/.bin/jam compile --no-license  -i js/app -o js/tale.min.js",
-    "unminify": "rm html/jam/tale.min.js",
-    "browserify": "./node_modules/.bin/browserify lib/client/xxtea-decrypt.js  --standalone xxtea  > html/jam/xxtea.js"
+    "web": "node server.js"
   },
   "bin": {
     "tale": "./bin/tale"
@@ -21,7 +17,9 @@
   "dependencies": {
     "async": "^0.2.10",
     "bops": "^0.1.1",
+    "browserify": "^4.2.0",
     "connect": "^2.14.2",
+    "cpr": "^0.3.2",
     "filereader-stream": "^0.1.0",
     "glob": "^3.2.9",
     "init-package-json": "0.0.15",
@@ -32,21 +30,19 @@
     "minimist": "0.0.8",
     "mkdirp": "^0.3.5",
     "node-uuid": "^1.4.1",
+    "npm": "^1.1.0",
     "open": "0.0.4",
     "read": "^1.0.5",
     "request": "^2.34.0",
     "rimraf": "^2.2.6",
-    "sjcl": "^1.0.0",
-    "xxtea-stream": ">=0.0.3"
+    "sjcl": "^1.0.1",
+    "tale-browser": "0.0.4",
+    "tape": "^2.13.3",
+    "xxtea-stream": "0.0.3"
   },
   "devDependencies": {
     "concat-stream": "^1.4.3",
-    "browserify": "^3.32.1",
-    "jamjs": "^0.2.17"
-  },
-  "jam": {
-    "baseUrl": "html",
-    "packageDir": "html/jam"
+    "browserify": "^3.32.1"
   },
   "repositories": [
     {

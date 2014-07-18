@@ -4,6 +4,7 @@ var fs = require('fs'),
     url = require('url'),
     path = require('path'),
     http = require('http'),
+    cpr = require('cpr'),
     glob = require('glob'),
     open = require('open'),
     read = require('read'),
@@ -14,8 +15,10 @@ var fs = require('fs'),
     request = require('request'),
     readline = require('readline'),
     md5 = require('md5-component'),
+    browserify = require('browserify'),
     init = require('init-package-json'),
     packager = require('../lib/packager'),
+    app_cache = require('../lib/appcache'),
     find_root = require('../lib/find-root'),
     FileStore = require('../lib/file-store'),
     argv = require('minimist')(process.argv.slice(2)),
@@ -32,22 +35,149 @@ if (argv._[0] === 'init') initialize();
 if (argv._[0] === 'serve') serve();
 if (argv._[0] === 'publish') publish();
 
+function initialize() {
+  var dir = process.cwd();
+  var initFile = require.resolve('../lib/basic-init.js')
+  init(dir, initFile, function (err, data) {
+    if (err) return console.error('could not write package.json');
+
+    var dist_dir = path.resolve(dir, 'dist'),
+        build_dir = path.resolve(dist_dir, 'build'),
+        tale_dir = path.resolve(dir, 'tale'),
+        npm_dst = path.resolve(dir, 'node_modules'),
+        npm_src = path.resolve(__dirname, '../node_modules' ),
+        loader_js_src = path.resolve(__dirname, '../html/js/loader.js' )
+        loader_js_dst  = path.resolve(dir, 'index.js'),
+        index_html_src = path.resolve(__dirname, '../html/index.html' ),
+        index_html_dst = path.resolve(dist_dir, 'index.html'),
+        bootstrap_js_src = path.resolve(__dirname, '../html/js/bootstrap.js' ),
+        bootstrap_js_dst = path.resolve(dist_dir, 'bootstrap.js' ),
+        bootstrap_css_src = path.resolve(__dirname, '../html/css/bootstrap.min.css' ),
+        bootstrap_css_dst = path.resolve(dist_dir, 'bootstrap.min.css' ),
+
+    mkdirp.sync( build_dir );
+    mkdirp.sync( tale_dir );
+    mkdirp.sync( npm_dst );
+
+
+    async.parallel([
+      make_chapters.bind(null, tale_dir),
+      fast_copy.bind(null, loader_js_src, loader_js_dst),
+      fast_copy.bind(null, index_html_src, index_html_dst),
+      fast_copy.bind(null, bootstrap_js_src, bootstrap_js_dst),
+      fast_copy.bind(null, bootstrap_css_src, bootstrap_css_dst)
+    ], function(err){
+      if (err) return console.log(err);
+      npm_install(['tale-browser', 'tale-plugin-markdown'], function(err){
+        if (err) return console.log(err);
+
+        oboe_hack(npm_dst, function(){
+          console.log('done');
+        })
+      })
+    })
+  })
+}
+
+function oboe_hack(npm_dir, cb){
+  var to_hack = path.resolve(npm_dir, 'tale-browser/node_modules/tale-read-api/node_modules/oboe/package.json')
+  var json = require(to_hack);
+  json.browser =  "./dist/oboe-browser.js"
+  fs.writeFileSync(to_hack, JSON.stringify(json));
+
+
+  var to_overwrite = path.resolve(npm_dir, 'tale-browser/node_modules/tale-read-api/node_modules/oboe/dist/oboe-browser.js'),
+      src = path.resolve(__dirname, '../html/js/oboe-browser.js')
+
+  fast_copy(src, to_overwrite, cb)
+
+
+}
+
+
+function symlink_pkg(dir, dist_dir, cb){
+  var src = path.resolve(dir, 'package.json'),
+      dst = path.resolve(dist_dir, 'package.json');
+  fs.symlink(src, dst, cb);
+}
+
+function make_chapters(tale_dir, cb) {
+  read({prompt: "Number of chapters to create? ", default: "2" }, function (err, num) {
+    if (err) cb('I did not understand that.');
+
+    var num_chapters = Number(num);
+    async.times(num_chapters, function(n, cb){
+      var human = n + 1;
+      var end = (human == num_chapters);
+      writeChapter(human, end, tale_dir, cb);
+    }, cb)
+  })
+}
+
+function npm_install(packages, cb){
+  var npm = require("npm")
+  npm.on('log', function(){})
+  npm.load(function (err) {
+    if (err) return cb(err);
+    npm.commands.install(packages, cb);
+  });
+}
+
+
+function npm_copy(npm_src, npm_dst, pkg_name){
+  var from = path.resolve( npm_src, pkg_name ),
+      to = path.resolve( npm_dst, pkg_name );
+  console.log('copy', from, to);
+  return cpr.bind(null, from, to)
+}
+
+function fast_copy(src, dst, cb) {
+  var index_js = fs.createWriteStream( dst )
+  index_js.on('close', cb)
+
+  fs.createReadStream( src )
+    .pipe( index_js )
+}
+
+function browserify_index(loader_js_path, browserify_dst_path, cb ){
+  var b = browserify();
+  b.add( loader_js_path )
+  b.bundle(cb).pipe( fs.createWriteStream( browserify_dst_path ) )
+}
+
 function package(){
-  var dir = argv.i || find_root('.');
-  var story_dir = argv.o || path.resolve(dir, './build'),
+  var dir = argv.i || find_root('.'),
+      loader_js_path  = path.resolve(dir, 'index.js'),
+      package_path = path.resolve(dir, 'package.json'),
+      dist_dir = path.resolve(dir, 'dist'),
+      build_dir = path.resolve(dist_dir, 'build'),
+      browserify_dst_path = path.resolve(build_dir, 'tale.js'),
+      app_cache_dst_path = path.resolve(build_dir, 'story.appcache'),
+      tale_dir = path.resolve(dir, 'tale'),
       proof_dir = argv.p || path.resolve(dir, './proofs'),
-      fs = FileStore(path.normalize(story_dir), path.normalize(proof_dir), {
+      file_store = FileStore(path.normalize(build_dir), path.normalize(proof_dir), {
         js_in_manifest:   argv.no_js_in_manifest || true,
         write_index_html: argv.no_index_html || true,
         write_tale_js:    argv.no_tale_js || true
       });
   console.log('starting...')
-  packager( path.normalize(dir), fs, function(err, graph){
+  console.log('building tale dir', tale_dir)
+  packager( path.normalize(tale_dir), package_path, file_store, function(err, graph){
     if (err) return console.error("Error:", err);
+    console.log('building tale complete')
+    console.log('browserify ', loader_js_path)
+    browserify_index(loader_js_path, browserify_dst_path, function(err){
+      if (err) return console.log(err);
 
-    console.log('\tbuild dir: ', story_dir);
-    console.log('\tproof dir: ', proof_dir);
-    console.log("Build complete. ");
+      app_cache.dir(build_dir, graph, {}, fs.createWriteStream(app_cache_dst_path), function(err){
+        if (err) return console.log(err);
+        console.log('\tbuild dir: ', build_dir);
+        console.log('\tproof dir: ', proof_dir);
+        console.log("Build complete. ");
+      })
+    })
+
+
   })
 }
 
@@ -151,31 +281,12 @@ function prompt(failure){
 }
 
 
-function initialize() {
-  var dir = process.cwd();
-  var initFile = require.resolve('../lib/basic-init.js')
-  init(dir, initFile, function (err, data) {
-    if (err) return console.error('could not write package.json');
 
-    read({prompt: "Number of chapters to create? ", default: "2" }, function (err, num) {
-      if (err) return console.error('I did not understand that.');
-      var num_chapters = Number(num);
-      async.times(num_chapters, function(n, cb){
-        var human = n + 1;
-        var end = (human == num_chapters);
-        writeChapter(human, end, dir, cb);
-      }, function(err){
-        console.log('done.');
-      })
-    })
-
-  })
-}
 
 
 function writeChapter(number, end, dir, cb){
   var chapter = {
-    "type": "markdown",
+    "plugins":["markdown"],
     "next_folder": {}
   }, next_folder = {
     "clue": "What is the password?",
@@ -197,7 +308,7 @@ function writeChapter(number, end, dir, cb){
 
 function serve() {
   var dir = argv.i || find_root('.'),
-      out_dir = argv.o || path.resolve(dir, './build'),
+      out_dir = argv.o || path.resolve(dir, './dist'),
       middleware = []
       portrange = argv._[1] || portrange;
 

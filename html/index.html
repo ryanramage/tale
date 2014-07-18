@@ -1,68 +1,105 @@
 <!DOCTYPE html>
-<html manifest="story.appcache">
+<html manifest="build/story.appcache">
 <head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
   <meta name="author" content="">
+  <style type="text/css"></style>
   <style type="text/css">
     #progress{width: 200px;margin: auto;font-size: 203%;position: relative;top: -43px; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; text-align: center; }  .loader {margin: 6em auto; font-size: 10px; position: relative; text-indent: -9999em; border-top: 1.1em solid rgba(200, 200, 200, 0.2); border-right: 1.1em solid rgba(200, 200, 200, 0.2); border-bottom: 1.1em solid rgba(200, 200, 200, 0.2); border-left: 1.1em solid #111; -webkit-animation: load8 1.1s infinite linear; animation: load8 1.1s infinite linear; } .loader, .loader:after { border-radius: 50%;width: 10em;height: 10em;} @-webkit-keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } } @keyframes load8 {0% {-webkit-transform: rotate(0deg); transform: rotate(0deg); } 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg); } }
   </style>
+  <style type="text/css">
+  .chapter {margin-bottom: 100px}
+  .chapter .content:first-letter {font-size:200%;}
+  </style>
+  <link rel="stylesheet" href="bootstrap.min.css">
 </head>
 <body>
   <div id="applicationCache"><div id="spinner"></div><div id="progress"></div></div>
   <div id="tale" class="container"></div>
 
+<script src="bootstrap.js"></script>
 
+<script id="template" type="text/ractive">
+{{^appcache_loading}}
+<div class="row">
+  <div class="col-md-12 chapter">
+    <div class="content">
+      {{{content}}}
+    </div>
+    {{#next}}
+    <div>
+      <p class="clue">{{clue}}</p>
+      <div class="form-inline" role="form">
 
-<script type="text/javascript">
-  Function.prototype.bind=Function.prototype.bind||function(d){var a=Array.prototype.splice.call(arguments,1),c=this;var b=function(){var e=a.concat(Array.prototype.splice.call(arguments,0));if(!(this instanceof b)){return c.apply(d,e)}c.apply(this,e)};b.prototype=c.prototype;return b};
+        {{#unlocked}}
+          <div class="form-group">
+              <input type="text" class="form-control" placeholder="UNLOCKED" disabled>
+          </div>
+          <a type="button" class="btn btn-default" href="#/{{unlocked}}">Next &raquo;</a>
+        {{/unlocked}}
 
-  (function(){
-    var $loader = document.getElementById('applicationCache'),
-        $spinner = document.getElementById('spinner'),
-        $progress = document.getElementById('progress'),
-        loaded = false;
+        {{^unlocked}}
+          <div class="form-group">
+              <input type="text" class="form-control" value='{{.pass}}' placeholder="Answer">
+          </div>
+          {{^unlocking}}
+            <button type="button" class="btn btn-default" on-click="crack">Next &raquo;</button>
+          {{/unlocking}}
+          {{#unlocking}}
+            <span class="unlocking">Unlocking, please wait...</span>
+          {{/unlocking}}
+          {{#.error}}
+            <span class="error alert alert-danger">{{.error}}</span>
+          {{/.error}}
 
-    window.applicationCache.addEventListener('updateready', onUpdateReady);
-    window.applicationCache.addEventListener('cached', onUpdateReady, false)
-    window.applicationCache.addEventListener('noupdate', allReady, false)
-    window.applicationCache.addEventListener('error', allReady, false)
-
-    function allReady(e){
-      if (loaded) return; else loaded = true;
-      require(['js/app'], function (app) {
-        app();
-        $loader.parentNode.removeChild($loader);
-      });
-    }
-    function onUpdateReady(e) {
-      try { window.applicationCache.swapCache() } catch(e){}
-      allReady()
-    }
-    window.applicationCache.addEventListener('downloading', function(e){
-      $spinner.classList.add('loader');
-    }, false);
-
-    window.applicationCache.addEventListener('progress', function(e){
-      if (e.total) {
-        $progress.innerHTML = e.loaded + " / " + e.total;
-        if (e.loaded === e.total) setTimeout(onUpdateReady, 500);
-      }
-    }, false);
-    if(window.applicationCache.status === window.applicationCache.UPDATEREADY) {
-      onUpdateReady();
-    }
-  })()
-
-  function loadDev(){
-      console.log('DEVELOPMENT MODE');
-      var script = document.createElement("script");
-      script.src = 'jam/require.js';
-      script.onload = load;
-      document.head.appendChild( script );
-  }
-
+        {{/unlocked}}
+      </div>
+    </div>
+    {{/next}}
+  </div>
+</div>
+{{^next}}
+<div class="row">
+  <div class="col-md-12">
+    <div class="well">
+      <h3>Story End</h3>
+      {{^submitted}}
+        {{#network_available}}
+        <button class="btn btn-primary" on-click="submit_time">Submit Time &raquo;</button>
+        {{/network_available}}
+        {{^network_available}}
+          <p>Connect to the internet to submit your results.</p>
+        {{/network_available}}
+        {{#time_err}}
+          <b>Failed to submit</b>
+        {{/time_err}}
+      {{/submitted}}
+      {{#submitted}}
+        {{#time.end}}
+          <p>
+             Finished: {{time.end_pretty}}<br>
+             Duration: {{time.pretty}} (hh:mm:ss)
+          </p>
+        {{/time.end}}
+        {{^time.user_id}}
+          <p>Anonymously submitted. Login to claim your time</p>
+          <a class="btn btn-primary" href="./{{chapter.id}}/login">Login &raquo;</a>
+        {{/time.user_id}}
+        {{#time.user_id}}
+          {{#chapter.end_link}}
+              <button class="btn btn-primary" on-click="end_link">Next &raquo;</button>
+          {{/chapter.end_link}}
+        {{/time.user_id}}
+      {{/submitted}}
+    </div>
+  </div>
+</div>
+{{/next}}
+{{/appcache_loading}}
 </script>
-<script src="js/tale.min.js" onerror="loadDev()"></script>
+
 </body>
 </html>
