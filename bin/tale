@@ -183,7 +183,8 @@ function package(){
 
 function publish(_email, _token) {
   var dir = argv.i || find_root('.'),
-      build_dir = argv.o || path.resolve(dir, './build'),
+      dist_dir = argv.o || path.resolve(dir, './dist'),
+      build_dir = path.resolve(dist_dir, './build'),
       proof_file = argv.p || path.resolve(dir, './proofs/proofs.json'),
       dest = argv._[1] || "http://t4.io",
       creds = lookup_creds(dest),
@@ -207,7 +208,7 @@ function publish(_email, _token) {
     qs: { access_token: token }
   }
 
-  glob('**/*', {cwd: build_dir, mark: true }, function(err, files){
+  glob('**/*', {cwd: dist_dir, mark: true }, function(err, files){
     var r = request.post(req_opts, function(err, resp, body){
       if (err) return console.error("Upload Failed: ", err);
       if (resp.statusCode === 401) return prompt(true);
@@ -227,7 +228,7 @@ function publish(_email, _token) {
     for (var i=0; i<files.length; i++){
       var file = files[i];
       if (! /\/$/.test(file)) { // ignore directories (ending in / )
-        form.append(files[i], fs.createReadStream(path.join(build_dir, files[i])));
+        form.append(files[i], fs.createReadStream(path.join(dist_dir, files[i])));
       }
     }
   })
