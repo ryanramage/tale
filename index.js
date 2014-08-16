@@ -113,7 +113,7 @@ function make_chapters(tale_dir, cb) {
 
 function writeChapter(number, end, dir, cb){
   var chapter = {
-    "plugins":["markdown"],
+    "markdown":true,
     "next_folder": {}
   }, next_folder = {
     "clue": "What is the password?",
