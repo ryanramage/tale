@@ -173,7 +173,7 @@ function serve() {
         return resp.end();
       }
       if (req.url == '/time') {
-        resp.write(JSON.stringify({ok: true, time_ms: 10000}));
+        resp.write(JSON.stringify({ok: true, time_ms: 10000, end: new Date().getTime()}));
         return resp.end();
       }
       next();
