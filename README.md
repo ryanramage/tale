@@ -3,9 +3,10 @@ Tale
 
 ![Stones](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRKyKW_fKXBbqj099VOTKEplgd6UvLox8wzF6HFSScVc8SO6rMx)
 
-Offline-first, location based story telling. Create tales that get people moving.
+Offline-first, location based story telling. The idea is that people have to physically find
+clues in order to progess the story. So create tales that get people moving!
 
-Here is a very boring example, gfor your reference:
+Here is a very boring example, for your reference:
 
 http://t4.io/mrp9xw/
 
@@ -49,6 +50,31 @@ When your story is ready, just do
 This will publish it to http://t4.io as public story.
 
 If you choose to host is somewhere else, just copy the build directory to any http server.
+
+
+Plugins
+-------
+
+Tale is very minimal by default. Each story can be enhanced via plugins. You can find a current list of
+[Tale Plugins](https://www.npmjs.org/browse/keyword/tale-plugin).
+
+To install a plugin, do the following:
+
+    npm install tale-plugin-submit-time
+
+Then add the plugin to your the dist/bootstrap.js file, so it looks like:
+
+    var plugins = {
+      markdown: require('tale-plugin-markdown')({}),
+      time: require('tale-plugin-submit-time')({})
+    }
+
+    var tale = require('tale-browser')({
+      base_url: './build',
+      plugins: plugins
+    })
+
+On the next `tale build` the plugin will be bundled into the story.
 
 
 
