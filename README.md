@@ -8,8 +8,6 @@ clues in order to progess the story. So create tales that get people moving!
 
 Here is a very boring example, for your reference:
 
-http://t4.io/mrp9xw/
-
 Also, see the wiki: https://github.com/ryanramage/tale/wiki
 
 
